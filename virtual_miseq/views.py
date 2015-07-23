@@ -109,7 +109,7 @@ def detail(request, experiment_id):
 	experiment = get_object_or_404(Experiment, experiment_id=experiment_id)
 	return render(request, 'detailView/detail.html', {'experiment': experiment})
 
-
+#popupnew
 def new_exp(request, experiment_id=None):
 	def generate_sample_name(sample):
 
