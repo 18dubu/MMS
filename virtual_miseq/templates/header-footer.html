@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Plorz | Ultimate Procrastination Solution</title>
+
+    <link rel="stylesheet" href="/css/foundation.css" />
+    <link rel="stylesheet" href="/css/fontello.css">
+    <link rel="stylesheet" href="/css/mainstyle.css" />
+    <link rel="stylesheet" href="/css/print.css" type="text/css" media="print">
+
+      
+    </head>
+
+    <body>
+  
+  
+  <div class="IVlabVideo">
+    <header>
+  <div class="row">
+    <nav class="top-bar" data-topbar>
+      <ul class="title-area">
+      <li class="name">
+        <a id="IVLabLogo" href="/"><img src="/images/logo.png" alt="LOGO" /></a>
+       </li>
+        <li class="toggle-topbar menu-icon"><a href="#">Menu</a></li>
+      </ul>
+
+      <section class="top-bar-section">
+        <!-- Right Nav Section -->
+        <ul class="right social">
+          <li><a href="https://www.linkedin.com/groups?gid=8200004"><img src="/images/icon/linkedin-32.png" height="28px" width="28px" alt="img_linkedin"></a></li>
+          <li><a href="https://www.facebook.com/plorzer"><img src="/images/icon/facebook-32.png" height="28px" width="28px" alt="img_facebook"></a></li>
+          <li><a href="https://twitter.com/Plorzer"><img src="/images/icon/twitter-32.png" height="28px" width="28px" alt="img_twitter"></a></li>
+          <li><a href="https://plus.google.com/communities/102750047715501707049"><img src="/images/icon/google-32.png" height="28px" width="28px" alt="img_google"></a></li>
+
+        </ul>
+
+        <ul class="right">
+          <li><a href="/">MAIN</a></li>
+          <li><a href="/about">OUR STORIES</a></li>
+          <li><a href="/how">HOW IT WORKS</a></li>
+          <li><a href="/community">COMMUNITY</a></li>
+
+          {% if user %}
+            <li><div class="inputs"><a href='/userConsole'>{{user.name}}</a></div></li>
+            <li>
+              <form id="signup" method="post">
+              <div class="sep"></div>
+              <div class="inputs">
+                  <a id="submit" href="/logout" > LOG OUT</a>
+              </div>
+              </form>
+            </li>
+          {% else %}
+
+            <li>
+            <form id="signup" method="post">
+            <div class="sep"></div>
+            <div class="inputs">
+                <a id="submit" href="/sign" > SIGN UP</a>
+            </div>
+            </form>
+            </li>
+
+            <li>
+            <form id="signup" method="post">
+            <div class="sep"></div>
+            <div class="inputs">
+                <a id="submit" href="/login" > LOG IN</a>
+            </div>
+            </form>
+            </li>
+
+          {% endif %}
+
+        </ul>
+      </section>
+    </nav>
+  </div>
+</header>
+  <div id="content">
+  <div class="page-wrapper">
+  {% block content %}
+  {% endblock %}
+  </div>
+
+
+ <footer>
+  <div class="footerHalf small-12 medium-6 columns">
+    <!-- Begin MailChimp Signup Form -->
+    <link href="//cdn-images.mailchimp.com/embedcode/slim-081711.css" rel="stylesheet" type="text/css">
+    <style type="text/css">
+      #mc_embed_signup{background:#fff; clear:left; font:14px Helvetica,Arial,sans-serif; }
+      /* Add your own MailChimp form style overrides in your site stylesheet or in this style block.
+         We recommend moving this block and the preceding CSS link to the HEAD of your HTML file. */
+    </style>
+    <div id="mc_embed_signup">
+    <form action="//plorz.us9.list-manage.com/subscribe/post?u=6af580b1d67f7389b38d40160&amp;id=92257c7935" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
+        <div id="mc_embed_signup_scroll">
+      <h4 for="mce-EMAIL">Keep tuned with Plorz.com</h4>
+      <input type="email" value="" name="EMAIL" class="email" id="mce-EMAIL" placeholder="email address" required>
+        <!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups-->
+        <div style="position: absolute; left: -5000px;"><input type="text" name="b_6af580b1d67f7389b38d40160_92257c7935" tabindex="-1" value=""></div>
+        <div class="clear"><input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button"></div>
+        </div>
+    </form>
+    </div>
+
+    <!--End mc_embed_signup-->
+  </div>
+
+  <div class="footerHalf small-12 medium-6 columns">
+      <div><h4>Plorz Groups:</h4></div>
+           <div class="small-3 text-center columns"><a href="https://www.linkedin.com/groups?gid=8200004"><img src="/images/icon/linkedin-32.png" height="28px" width="28px" alt="img_linkedin"></a></div>
+           <div class="small-3 text-center columns"><a href="https://www.facebook.com/plorzer"><img src="/images/icon/facebook-32.png" height="28px" width="28px" alt="img_facebook"></a></div>
+           <div class="small-3 text-center columns"><a href="https://twitter.com/Plorzer"><img src="/images/icon/twitter-32.png" height="28px" width="28px" alt="img_twitter"></a></div>
+           <div class="small-3 text-center columns"><a href="https://plus.google.com/communities/102750047715501707049"><img src="/images/icon/google-32.png" height="28px" width="28px" alt="img_google"></a></div>
+   
+  </div>
+
+  <div class="footerBottom small-12 columns">
+    <div class="small-12 medium-2 columns">
+      <a class="IVLabLogo" href="http://www.plorz.com/"><img src="/images/logo.png"></a>
+    </div>
+    <div class="small-12 medium-6 columns footer-nav">
+      <div class="row">
+        <div class="small-12 medium-4 columns">
+          <h6><a href="/about">About</a></h6>
+          <ul>
+            <li><a href="http://kaarre.wordpress.com/2013/03/25/throw-your-hat-over-the-fence/" class="fade-in transition">Hat over the wall story</a></li>
+
+          </ul>
+        </div>
+        <div class="small-12 medium-4 columns">
+          <h6><a href="/how">How</a></h6>
+          <ul>
+            <li><a href="/statistics" class="fade-in transition">The statistics</a></li>
+
+          </ul>
+        </div>
+        <div class="small-12 medium-4 columns">
+          <h6><a href="/team">Team</a></h6>
+          <ul>
+            <li><a href="/construction" class="fade-in transition">Members</a></li>
+
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="small-12 medium-1 columns footer-nav">
+      <h6><a href="/blog">Blogs</a></h6>
+      <h6><a href="/donation">Donation</a></h6>
+      <h6><a href="/career">Cooperation</a></h6>
+      <h6><a href="/contact">Contact</a></h6>
+    </div>
+    <div class="small-12 medium-3 text-right columns footerSubmitCopy">
+      <a id="ideaSumbit" class="button round" href="./feedback">Feedback</a>
+      <p class="copyrightInfo">Plorz LLC Copyright © 2014</p>
+    </div>
+  </div>
+
+</footer>
+
+</body>
+
+</html>

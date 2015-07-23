@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+{% extends "base.html" %}
+<html>
+{% block script %}
+<script src="{% static "js/jquery.dataTables.js" %}"></script>
+<link rel="stylesheet" href="{% static "css/jquery.dataTables.css" %}" />
+<link rel="stylesheet" href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.css" />
+<script>
+$(document).ready(function() {
+    $('#example').dataTable( {
+        "columnDefs": [
+            {
+                // The `data` parameter refers to the data for the cell (defined by the
+                // `data` option, which defaults to the column being worked with, in
+                // this case `data: 0`.
+                "render": function ( data, type, row ) {
+                    return data +' ('+ row[3]+')';
+                },
+                "targets": 0
+            },
+            { "visible": false,  "targets": [ 3 ] }
+        ]
+    } );
+} );
+</script>
+{% endblock%}
+<body>
+<table id="example" class="display" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Position</th>
+                <th>Office</th>
+                <th>Age</th>
+                <th>Start date</th>
+                <th>Salary</th>
+            </tr>
+        </thead>
+ 
+        <tfoot>
+            <tr>
+                <th>Name</th>
+                <th>Position</th>
+                <th>Office</th>
+                <th>Age</th>
+                <th>Start date</th>
+                <th>Salary</th>
+            </tr>
+        </tfoot>
+ 
+        <tbody>
+	</tbody>
+</table>
+
+
+</body>
+</html>
+<!--
+{% if experiments.count > 0%}
+
+{% for experiment in experiments%}
+	<li><a href='search/{{experiment.experiment_id}}/'>{{experiment.title}}</a></li>
+{% endfor %}
+
+{% elif experiments.count = 0 %}
+
+<li>Nothing is found by the key words</li>
+
+{% endif%}
+
+
+--!>
+
+<!--
+
+{% load staticfiles %}
+<html>
+<head>
+<script src="{% static "js/jquery.dataTables.js" %}"></script>
+<link rel="stylesheet" href="{% static "css/jquery.dataTables.css" %}" />
+</head>
+Table
+<table cellpadding="0" cellspacing="0" border="0" id="example">
+     <thead>
+         <tr><th>My Attr Heading</th></tr>
+     </thead>
+     <tbody>
+     </tbody>
+</table>
+
+<script type="text/javascript" language="javascript" class="init">
+     $(document).ready(function() {
+         $('#example').dataTable( {
+             "processing": true,
+             "ajax": {
+                 "processing": true,
+                 "url": "{% url 'my_ajax_url' %}",
+                 "dataSrc": ""
+             },
+
+             "columns": [
+                     { "data": "fields.I7_Index_ID" },
+                     { "data": "index" }
+		     { "data": "id"}
+                 ]
+         } );
+     } );
+ </script>
+
+</html>
+
+
+--!>
+

@@ -1,0 +1,46 @@
+<html>
+<br>
+<div align=middle>
+<a href='/virtual/new/'>|Start New MiSeq Experiment|</a>
+
+<a href='/physical/'>|View Physical MiSeq Experiments|</a>
+
+<a href='/signin/'>|Sign In|</a>
+
+<a href='/admin/'>|Admin|</a>
+</div>
+
+
+<br>
+<div align='middle'>
+{% load staticfiles %}
+<img src="{% static "images/construction.png" %}"  alt='test img' width=20% height=30%/>
+</div>
+
+{% block sidebar %}
+<div align=middle width=80%>
+<h3>Search Existing Experiments:</h3>
+{% csrf_token %}
+<input type="text" id="search" name="search"/>
+
+<ul id="search-results">
+
+</ul>
+
+{% endblock %}
+
+{% block content %}
+<h3>Latest Experiments:</h3>
+{% if experiments.count > 0 %}
+    <ul>
+    {% for experiment in experiments %}
+        <li><a href="{{experiment.get_absolute_url}}"> {{experiment.experiment_id}}  |  {{experiment.title}}   |  {{ experiment.experiment_date }}  |  {{experiment.investigator}}  |  link: http://rnai.pfizer.com/{{experiment.get_absolute_url}}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No experiments are available.</p>
+{% endif %}
+</div>
+{% endblock %}
+
+</html>

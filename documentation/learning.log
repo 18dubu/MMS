@@ -1,0 +1,83 @@
+
+
+
+
+#Admin import:
+
+##django-import-export:
+https://django-import-export.readthedocs.org/en/latest/getting_started.html
+https://github.com/django-import-export/django-import-export
+follow the example
+
+###remember:
+1. install django-import-export also on server, not only virtualenv
+
+#ajax
+
+ django-ajax-selects-1.3.6
+
+https://github.com/crucialfelix/django-ajax-selects
+
+#xadmin
+pip install django-xadmin
+pip install django-reversion
+pip install xlwt
+pip install XlsxWriter
+
+#django-fobi
+https://github.com/barseghyanartur/django-fobi
+
+#user feedback
+http://django-envelope.readthedocs.org/en/latest/usage.html
+
+
+#formset
+https://code.google.com/p/django-dynamic-formset/source/browse/trunk/docs/usage.txt#259
+http://kevindias.com/writing/django-class-based-views-multiple-inline-formsets/
+*important Info*
+django-selectable has problem working with dynamically added forms (only the first form works). The solution is as follows:
+
+1. add the following code to your forset js 
+"
+added: bindSelectables
+"
+{{{ bindSelectables }}} takes a selector/context as a required parameter. You could pass {{{ added: bindSelectables }}} or {{{ added: function(row) {bindSelectables($(row));} }}} but not simply {{{ bindSelectables() }}} as reported.
+ex:
+    <script type="text/javascript">
+        $(function() {
+            $(".inline.{{ samforms.prefix }}").formset({
+                prefix: "{{ samforms.prefix }}",
+                added: bindSelectables
+                //added: function(row) {
+                //      bindSelectables( $(row) );
+                //}
+                })
+            //$(".inline.{{ instruction_form.prefix }}").formset({
+                //prefix: "{{ instruction_form.prefix }}",
+                //})
+            })
+    </script>
+
+2.make sure the selectable js file is imported after the formset init
+
+ex:
+</body>
+<script type="text/javascript" src="{% static "js/jquery.dj.selectable.js" %}"></script>
+
+{% endblock %}
+</html>
+
+
+3. Make sure to use the right version of jquery.dj.selectable.js (16k, in selectable/js/)
+
+
+REF:
+https://github.com/mlavin/django-selectable/issues/31
+http://stackoverflow.com/questions/7275515/django-selectable-with-dynamic-inlines
+
+
+
+
+
+#parsley
+#https://github.com/agiliq/Django-parsley

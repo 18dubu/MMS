@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+{% extends "base.html" %}
+
+{% load staticfiles %}
+
+
+<head>
+
+{% block script %}
+
+<script src="{% static "js/jquery.dataTables.js" %}"></script>
+<link rel="stylesheet" href="{% static "css/jquery.dataTables.css" %}" />
+
+<script>
+$(document).ready(function() {
+    $('#recent').dataTable( {
+        "columnDefs": [
+            {
+                // The `data` parameter refers to the data for the cell (defined by the
+                // `data` option, which defaults to the column being worked with, in
+                // this case `data: 0`.
+                "render": function ( data, type, row ) {
+                    return data;
+                },
+                "targets": 0
+            },
+            //{ "visible": false,  "targets": [ 4 ] }
+        ]
+    } );
+} );
+</script>
+
+
+
+{% endblock%}
+
+</head>
+
+{%block content  %}
+
+
+<body>
+
+    <div id="videocontainer" style="background-image:url("{% static "images/chem_lab_hero.jpg" %}");"> <!--style="background-image:url('/images/front-bg.jpg');"-->
+        
+        <video autoplay loop preload width="100%">
+          <source src="{% static "images/1front-movie.mp4" %}" type="video/mp4">
+          <source src="{% static "images/1front-movie.webm" %}" type="video/webm" />
+        </video>
+        
+    </div>
+
+  
+  <div class="IVlabVideo">
+
+    <section>
+      <div class="small-12 columns">
+        <div class="text-center labHeroText">
+          <h2>MMS</h2>
+          
+          <h3>MiSeq Managment System</h3>
+
+          <a href="/virtual/new/" id="heroLeanMore">Design Experiment
+
+          </a>
+          
+        </div>
+      </div>
+    </section>
+  </div>
+
+
+
+<div class="page-wrapper">
+
+<div class="jumbotron" style="margin-bottom: 0px;">
+  <h2 align='middle'>Latest Experiments:</h2>
+
+
+<table id="recent" class="display" cellspacing="0" width="90%">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Project</th>
+		<th>Date</th>
+                <th>Investigators</th>
+                <th>Created By</th>
+		<th>Action</th>
+	    </tr>
+        </thead>
+
+        <tfoot>
+            <tr>
+            	<th>Title</th>
+                <th>Project</th>
+		<th>Date</th>
+                <th>Investigators</th>
+                <th>Created By</th>
+                <th>Action</th>
+	    </tr>
+        </tfoot>
+
+        <tbody>
+		{% for experiment in experiments %}
+			<tr>
+				<td><a href="{{experiment.get_absolute_url}}">{{experiment.title}}</a></td>
+                                <td>{% autoescape off %}{{experiment.get_taged_project_name}} {% endautoescape %}</td>
+				<td>{{ experiment.get_standard_created_date }}</td>
+                                <td>{% autoescape off %}{{experiment.get_taged_investigator_name}} {% endautoescape %}</td>
+                                <td>{{experiment.created_by.FirstName}}</td>
+                                <td><a href="{{experiment.get_absolute_url}}">Add sample</a></td>
+			</tr>
+
+		{% endfor %}
+        </tbody>
+</table>
+
+ <p style="text-align: center;"><a href='/virtual/search/' class="btn btn-primary btn-lg">Advanced Search</a></p>
+</div>
+
+
+
+<!--
+    <div id="IVlabWork" class="text-center small-12 columns" style=" padding-bottom: 0px; padding-top: 10px; ">
+       <div class="small-12 medium-11 large-8 medium-centered columns">
+         <div class="small-12 columns">
+           <h5><a href="./sign">PLORZ IT NOW!</a></h5>
+           <p class="workParagraph">End of your comfort, begin of everything! </p>
+         </div>
+
+       </div>
+    </div>
+-->
+<div class="page-wrapper">
+<div class="IVlabTheLab small-12 columns">
+      <div class="small-12 medium-4 columns">
+        <h2></h2>
+        <img src='{%static "images/miseq.png" %}' style="float: left; width: 50%;">
+	<img src='{%static "images/miseq-data.png" %}' style="float: right; width: 50%;">
+      </div>
+      <div class="small-12 medium-8 anada columns">
+        <div class="small-12 medium-11 medium-offset-1 columns"><h2>Pfizer MiSeq Management System</h2>
+	<p>Pfizer MiSeq Management System (MMS) is a web-based tools for tracking and managing MiSeq Experiments conducted within Pfizer Oncology Research Group.</p><p>In order to facility data <a href="https://en.wikipedia.org/wiki/Interoperability"> interoperability</a>, controled libraries were used when creating new MiSeq Experiments (sample sheets). The MMS system can be used to <a href='/virtual/new/'>create</a>, edit, export and share MiSeq Experiments. Also, it provides a <a href='/virtual/search/'>customized instant search</a> (Ajax search) option, enabling a systemic view of the current experiments under conduction.</p>
+      </div>
+     </div>
+</div>
+
+<div class="IVlabLabAreas small-12 columns">  
+  <a href="#" class="btn btn-default btn-lg btn-block">Related Systems</a>
+
+  <div class="area small-12 medium-6 large-4 columns" style="background-image:url({% static "images/bg-lab1.jpg" %});">
+    <div class="areaContent small-12 columns">
+      <h4>Pfizer IDMS System</h4>
+      <p><a><font color="orange">Information Data Management System (IDMS)</a></p><p><a><font color="orange">Proteomics and Metabolomics Laboratory</a></p><p><a><font color="orange">Tumor Activities</a></p>
+    </div>
+  </div>
+  </a>
+  
+  <a href="http://lj-compbio.pfizer.com/" >
+  <div class="area small-12 medium-6 large-4 columns" style="background-image:url({% static "images/bg-lab2.jpg" %});">
+    <div class="areaContent small-12 columns">
+      <h4>Pfizer Computational Biology</h4>
+      <p><a href="http://lj-compbio.pfizer.com/#t1"><font color="orange">Services</a></p><p><a href="http://lj-compbio.pfizer.com/#t1"><font color="orange">Resources</a></p>
+    </div>
+  </div>
+  </a>
+  
+  <a href=" http://idms.pfizer.com/funcgen/">
+  <div class="area small-12 medium-6 large-4 columns" style="background-image:url({% static "images/bg-lab3.jpg" %});">
+    <div class="areaContent small-12 columns">
+      <h4>Pfizer Functional Genomics Center</h4>
+      <p><a><font color="orange">Technology Access</a></p><p><a><font color="orange">Functional genomics infrastructure</a></p>
+    </div>
+  </div>
+  </a>
+  
+ 
+</div>
+
+</div>
+
+<script>
+  $(document).foundation();
+
+  $( ".area" ).hover(
+    function() {
+      $( this ).children( ".areaContent" ).css( "top", "10px" );
+    }, function() {
+      $( this ).children( ".areaContent" ).css( "top", "170px" );
+    }
+  );
+
+
+   var unslider = $('.banner').unslider({
+      speed: 500,               //  The speed to animate each slide (in milliseconds)
+      delay: 7000,              //  The delay between slide animations (in milliseconds)
+      keys: true,               //  Enable keyboard (left, right) arrow shortcuts
+      dots: true,               //  Display dot navigation
+      fluid: true              //  Support responsive design. May break non-responsive designs
+    });
+
+
+    $('.unslider-arrow').click(function() {
+        var fn = this.className.split(' ')[1];
+        unslider.data('unslider')[fn]();
+    });
+
+    $('#galleryCaptionLauncher').click(function() {
+        $('.feature_gallery ul li span').fadeToggle();
+    });
+
+
+</script>
+
+
+{% endblock %}
+
+
+</body>
+</html>
+
