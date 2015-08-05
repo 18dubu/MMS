@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{%block script %}
+    <title>MMS | New Experiment</title>
+
+
+    <link href="{% static "css/dj.selectable.css" %}" type="text/css" media="all" rel="stylesheet">
+
+    <script src="{% static "js/jquery.formset.js" %}"></script>
+
+    
+    <script type="text/javascript">
+    //datapicker
+    $(function() {
+    $( ".datepicker" ).datepicker({
+      changeMonth: true,
+      changeYear: true,
+      yearRange: "2000:2050",
+      // You can put more options here.
+
+      });
+    });
+    </script>
+
+    <link rel="stylesheet" href="{% static "css/new-form.css" %}" />
+
+
+{% endblock %}
+{% block content %}
+<body>
+<ul class="breadcrumb">
+  <li><a href="/">Home</a></li>
+  <li><a href="/virtual">Virtual MiSeq</a></li>
+  <li class="active">Create New Experiment</li>
+</ul>
+
+    <div>
+<form action="." method="post">
+{% csrf_token %}
+	    
+
+<div class="form-style-10" style='width:50%'>
+<h1>Create New MiSeq Experiment<span>powered by Pfizer MMS</span></h1>
+<form>
+    <div class="section"><span>1</span>META Data</div>
+    
+    <div class="inner-wrap">
+	<p>
+	{{ expform.project_name.label_tag}}
+	{{ expform.project_name.errors}}
+	{{ expform.project_name}}
+	</p>
+        <p>
+	{{expform.title.label_tag}}
+	{{expform.title.errors}}
+	{{expform.title}}
+	</p>
+        <p>
+	{{expform.experiment_date.label_tag}}
+	{{expform.experiment_date.errors}}
+	{{expform.experiment_date}}
+	</p>
+        <p>
+	{{expform.investigator.label_tag}}
+	{{expform.investigator.errors}}
+	{{expform.investigator}}
+	</p>
+        <p>
+	{{expform.description.label_tag}}
+	{{expform.description.errors}}
+	{{expform.description}}
+    	</p>
+    </div>
+    <hr>
+    <label>Default values</label>
+    <div class="inner-wrap-2">
+        <p>
+	{{ expform.reads.label_tag}}
+	{{ expform.reads.errors}}
+	{{ expform.reads}}
+	</p>
+	<p>
+	{{expform.workflow.label_tag}}
+	{{expform.workflow.errors}}
+	{{expform.workflow}}
+	</p>
+	<p>
+	{{expform.chemistry.label_tag}}
+	{{expform.chemistry.errors}}
+	{{expform.chemistry}}
+	</p>
+	 <p>
+        {{expform.application.label_tag}}
+        {{expform.application.errors}}
+        {{expform.application}}
+        </p>
+	<p>
+	{{expform.assay.label_tag}}
+	{{expform.assay.errors}}
+	{{expform.assay}}
+	</p>
+	<p>
+        {{expform.disease_area.label_tag}}
+        {{expform.disease_area.errors}}
+        {{expform.disease_area}}
+        </p>
+	<p>
+	{{expform.version.label_tag}}
+	{{expform.version.errors}}
+	{{expform.version}}
+	</p>
+	<p>
+	{{expform.reverse_complement.label_tag}}
+	{{expform.reverse_complement.errors}}
+	{{expform.reverse_complement}}
+    	</p>
+	{{ expform.management_form }}
+    </div>
+
+      <div class="button-section" align="center">
+	<hr>
+	{%if mode == "edit" %}
+	<input type='submit' name='delete_exp'class="submit" value="Delete Experiment" style="position:relative;margin-right: 50px;" onclick="return confirm('Are you sure you want to DELETE this experiment?');"/>
+	{%elif  mode == "new"%}
+	<input type='submit' name='cancel_exp'class="submit" value="Cancel" style="position:relative;margin-right: 50px;"/>
+	{%endif%}
+	<input type="submit" name='create_exp' value="Save Experiment" class="submit" />
+      </div>
+    </form>
+  </div>
+</form>
+</div>
+
+
+
+</body>
+<script type="text/javascript" src="{% static "js/jquery.dj.selectable.js" %}"></script>
+
+{% endblock %}
+</html>
+
+

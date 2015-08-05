@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{%block script%}
+<script src="{% static "js/jquery.dataTables.js" %}"></script>
+<link rel="stylesheet" href="{% static "css/jquery.dataTables.css" %}" />
+<script>
+$(document).ready(function() {
+    $('#sample').dataTable( {
+        "scrollX": true,
+	"pageLength": 100,
+	"columnDefs": [
+            {
+                // The `data` parameter refers to the data for the cell (defined by the
+                // `data` option, which defaults to the column being worked with, in
+                // this case `data: 0`.
+                "render": function ( data, type, row ) {
+                    return data;
+                },
+                "targets": 0
+            },
+            //{ "visible": false,  "targets": [ 4 ] }
+        ]
+    } );
+} );
+</script>
+
+
+{%endblock%}
+
+{% block content %}
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading">
+    <h2 style="float:left;margin-top: 2px;margin-bottom: 0px;margin-right: 50px;">Investigators </h2>
+      <input type="submit" class="btn btn-default" style="position:relative;margin-right: 50px;" value="Submit Modification Request" onclick="popupwindow('/virtual/investigators/request/','',700,700)">
+     <a href="/media/db/latest/IDMSUser.csv" class="btn btn-info" style="position:relative;float:right;">Export</a>
+  </div>
+ </div>
+
+
+<table id="sample" class="display" style="width: 95%;margin-left:auto;margin-right:auto;">
+        <thead>
+            <tr>
+                <th>UserID</th>
+		<th>NTID</th>
+                <th>Name</th>
+                <th>EmailAddress</th>
+                <th>Phone</th>
+                <th>Privilege</th>
+                <th>ValidationStatus</th>
+                <th>UserGroup</th>
+                <th>Organization</th>
+                <th>Shippingcity</th>
+                <th>approvalStatus</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+
+        {% for item in object_list %}
+
+
+         <tr>
+                <td>{{item.UserID}}</td>
+        	<td>{{item.NTID}}</td>
+		<td>{% autoescape off %}{{item.get_taged_investigator_name}}{% endautoescape %}</td>
+                <td>{{item.EmailAddress}}</td>
+                <td>{{item.Phone}}</td>
+                <td>{{item.Privilege}}</td>
+                <td>{{item.ValidationStatus}}</td>
+                <td>{{item.user_group}}</td>
+                <td>{{item.Organization}}</td>
+                <td>{{item.Shippingcity}}</td>
+                <td>{{item.get_approvalStatus_display}}</td>
+
+	</tr>
+
+
+{% endfor %}
+        </tbody>
+</table>
+
+
+
+{% endblock %}

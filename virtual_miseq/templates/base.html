@@ -38,6 +38,15 @@ $(document).ready(function() {
 });
 </script>
 
+<script>
+function popupwindow(url, title, w, h) {
+  var left = (screen.width/2)-(w/2);
+  var top = (screen.height/2)-(h/2);
+  return window.open(url, title, 'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=no, copyhistory=no, width='+w+', height='+h+', top='+top+', left='+left);
+}
+</script>
+
+
 {% block script%} {% endblock%}
 
 </head>
@@ -49,7 +58,7 @@ $(document).ready(function() {
 
 <header style="width: 100%;">
   <div class="row" style="margin-left: 0px;margin-right: 0px;">
-    <nav class="top-bar fixed" data-topbar>
+    <nav class="top-bar fixed" data-topbar style="background: #000000;">
       <ul class="title-area">
       <li class="name">
        <a id="IVLabLogo" href="/"><img src="{% static "images/icon/pfizer-small.png"%}" alt="LOGO" /></a>
@@ -70,7 +79,7 @@ $(document).ready(function() {
             <li>
               <form id="signup" method="post">
               <div class="inputs">
-                  <a id="submit" href="/logout" > LOG OUT</a>
+                  <a id="submit" href="/accounts/logout/" > LOG OUT</a>
               </div>
               </form>
             </li>
@@ -79,7 +88,7 @@ $(document).ready(function() {
             <li>
             <form id="signup" method="post">
             <div class="inputs">
-                <a id="submit" href="virtual/signup/" > SIGN UP</a>
+                <a id="submit" href="/accounts/register/" > SIGN UP</a>
             </div>
             </form>
             </li>
@@ -87,7 +96,7 @@ $(document).ready(function() {
             <li>
             <form id="signup" method="post">
             <div class="inputs">
-                <a id="submit" href="virtual/login/" > LOG IN</a>
+                <a id="submit" onclick="popupwindow('/accounts/login/','Login',700,500)"> LOG IN</a>
             </div>
             </form>
             </li>
@@ -140,36 +149,39 @@ $(document).ready(function() {
 
   <div class="footerBottom small-12 columns">
     <div class="small-12 medium-2 columns">
-      <a class="IVLabLogo" href="http://www.pfizer.com/"><img src="{% static "images/icon/pfizer-small.png"%}"></a>
+      <a class="IVLabLogo" style="width:50%" href="http://www.pfizer.com/"><img src="{% static "images/icon/pfizer-small.png"%}"></a>
     </div>
     <div class="small-12 medium-6 columns footer-nav">
       <div class="row">
         <div class="small-12 medium-4 columns">
-          <h6><a href="/about">About</a></h6>
+          <h6><a href="/TODO">About</a></h6>
           <ul>
-            <li><a href="#" class="fade-in transition">Current Version</a></li>
+            <li><a href="/TODO" class="fade-in transition">Current Version</a></li>
           </ul>
         </div>
         <div class="small-12 medium-4 columns">
-          <h6><a href="/how">Documentation</a></h6>
+          <h6><a href="/TODO">Documentation</a></h6>
           <ul>
-            <li><a href="/statistics" class="fade-in transition">User Manual</a></li>
-            <li><a href="/statistics" class="fade-in transition">Help</a></li>
+            <li><a href="/TODO/" class="fade-in transition">User Manual</a></li>
+            <li><a href="/TODO/" class="fade-in transition">Help</a></li>
           </ul>
         </div>
         <div class="small-12 medium-4 columns">
-          <h6><a href="/team">Team</a></h6>
+         <h6><a href="/TODO">Controlled Vocabulary</a></h6>
           <ul>
-            <li><a href="/construction" class="fade-in transition">Members</a></li>
-
+            <li><a href="/virtual/investigators/" class="fade-in transition">Investigators</a></li>
+   	    <li><a href="/virtual/cclelibrary/" class="fade-in transition">CCLE Library</a></li>
+	    <li><a href="/virtual/shrnalibrary/" class="fade-in transition">shRNA Library</a></li>
+	    <li><a href="/virtual/miseqindex/" class="fade-in transition">MiSeq Index</a></li>
+	    <li><a href="/virtual/treatments/" class="fade-in transition">Treatments</a></li>
           </ul>
         </div>
       </div>
     </div>
     <div class="small-12 medium-1 columns footer-nav">
-      <h6><a href="/blog">Site Map</a></h6>
-      <h8><a href="/search/">Terms of Use</a></h8>
-      <h6><a href="/career">Privacy</a></h6>
+      <h6><a href="/TODO">Site Map</a></h6>
+      <h8><a href="/TODO/">Terms of Use</a></h8>
+      <h6><a href="/TODO">Privacy</a></h6>
       <h6><a href="/contact/">Contact Us</a></h6>
     </div>
     <div class="small-12 medium-3 text-right columns footerSubmitCopy">

@@ -4,14 +4,11 @@ from django.forms.models import inlineformset_factory
 from django.utils.safestring import mark_safe
 from django.contrib.admin import widgets     
 from django.core.exceptions import NON_FIELD_ERRORS
-                                  
+from django.core.exceptions import ValidationError                   
 from parsley.decorators import parsleyfy
 
 import selectable.forms as selectable
 from .lookups import InvestigatorLookup,CellmodelLookup, ShrnaLookup
-
-
-
 
 #http://blog.brendel.com/2012/01/django-modelforms-setting-any-field.html
 class ExtendedMetaModelForm(forms.ModelForm):
@@ -108,8 +105,7 @@ class ExperimentForm(forms.ModelForm):
 		error_messages={'required':('Guy(s) who will conduct the experiment'),},
 	)
 
-	#investigator  = make_ajax_field(Experiment, 'investigator', 'investigator', show_help_text=False)
-	#investigator  = AutoCompleteSelectField( 'experiment', required=True, plugin_options = {'autoFocus': True, 'minLength': 4})	
+	
 
 	def __init__(self, *args, **kwargs):
         	#user = kwargs.pop('user','')
@@ -122,6 +118,12 @@ class ExperimentForm(forms.ModelForm):
 		#if instance and instance.pk:
             	#	self.fields['experiment_id'].widget.attrs['readonly'] = True
 	        	#self.fields['samples']=forms.ModelChoiceField(queryset=Experiment.objects.all())
+
+	def clean_title(self):
+		title = self.cleaned_data['title']
+		if Experiment.objects.filter(title=title).count() > 0:
+			raise ValidationError('This Experiment Title already exists! Please select a new name.')
+		return title
 
 	def clean_experiment_id(self):
 		experiment_id = self.cleaned_data['experiment_id']
@@ -143,16 +145,16 @@ class SampleForm(forms.ModelForm):
 	class Meta:
 		model = Sample
 		#fields=('index','cell_model','shRNA_library','shRNA_on','time_in_days','treatment','treatment_dose','replicate','other_tag','comment',)
-        	exclude = ('feedback_flag','finish_flag','sample_name','created_by','created_date','updated_by','updated_date','download_by','download_date','sample_id','finish_flag',)
+        	exclude = ('experiment','feedback_flag','finish_flag','sample_name','created_by','created_date','updated_by','updated_date','download_by','download_date','sample_id','finish_flag',)
 		labels = {
                   'treatment_dose': 'Treatment Dose (nM)',
                   'time_in_days': 'Time (Days)',
                   'shRNA_on': 'shRNA ON/OFF',
                   'pool_number': 'Pool Number',
 		}
-		#widgets = {
-		#  'pool_number': forms.CheckboxSelectMultiple()
-		#}
+	#	widgets = {
+	#	  'pool_number': forms.CheckboxSelectMultiple()
+	#	}
 		error_messages = {
                         'index': {'required': ("Required"),},
                         'cell_model': {'required':('Required'),},
@@ -164,16 +166,6 @@ class SampleForm(forms.ModelForm):
 			'replicate': {'required':('Required'),},
 		}
 	
-		#error_messages = {
-                #        'index': {'required': ("What you can do without an unique Index"),},
-                #        'cell_model': {'required':('Where does the cell come from?'),},
-                #        'shRNA_library': {'required':('Where does the shRNA come from?'),},
-                #        'shRNA_on': {'required':(''),},
-		#	'time_in_days': {'required':('Time matters...'),},
-		#	'treatment': {'required':('Pick one!'),},
-		#	'treatment_dose': {'required':('It should be some integer in nM'),},
-                #}
-
 
 	cell_model = selectable.AutoCompleteSelectField(
         	lookup_class=CellmodelLookup,
@@ -194,6 +186,44 @@ class SampleForm(forms.ModelForm):
         	self.fields['shRNA_on'].required = True
 
 
+
+        def clean(self):
+		cleaned_data = super(SampleForm, self).clean()	
+                
+		index = cleaned_data.get('index')
+                sample_name = cleaned_data.get('id')
+		cell_model  = cleaned_data.get('cell_model')
+		shRNA_library = cleaned_data.get('shRNA_library')
+		time_in_days = cleaned_data.get('time_in_days')
+		treatment = cleaned_data.get('treatment')
+		treatment_dose = cleaned_data.get('treatment_dose')
+		replicate = cleaned_data.get('replicate')
+		pool_number = cleaned_data.get('pool_number')
+		shRNA_on = cleaned_data.get('shRNA_on')
+		other_tag = cleaned_data.get('other_tag')
+		                
+
+		if self.instance.experiment.sample_set.filter(cell_model=cell_model,shRNA_library=shRNA_library,time_in_days=time_in_days,treatment=treatment,treatment_dose=treatment_dose,shRNA_on=shRNA_on,other_tag=other_tag,replicate=replicate).count() > 0:
+			
+			raise ValidationError('Duplicated Sample Names! Change replicate if needed!')
+		if self.instance.experiment.sample_set.exclude(sample_name=sample_name).filter(index=index).count() > 0:
+                	#raise ValidationError(cleaned_data['id'])
+                        raise ValidationError('This Index is already in use! Please select a different Index.')
+                return cleaned_data
+
+
+	#http://stackoverflow.com/questions/12905318/django-custom-form-validation-with-foreign-keys
+        #def clean_index(self):
+        #        index = self.cleaned_data['index']
+	#	sample_name = self.data.get('id')
+	#	if self.instance.experiment.sample_set.exclude(sample_name=sample_name).filter(index=index).count() > 0:
+        #                raise ValidationError(sample_name)
+			#raise ValidationError('This Index is already in use! Please select a different Index.')
+        #        return index
+
+
+
+
 SampleFormSet = inlineformset_factory(Experiment, Sample,
                                         form=SampleForm,
                                         #fields=('index','cell_model','shRNA_library','shRNA_on','time_in_days','treatment','treatment_dose','replicate','other_tag','comment',),
@@ -207,7 +237,15 @@ SampleFormSet = inlineformset_factory(Experiment, Sample,
                                         can_order = False
         )
 
+SampleFormSet0 = inlineformset_factory(Experiment, Sample,
+                                        form=SampleForm,
+                                        extra=0,
+                                        can_delete = True,
+                                        can_order = False
+        )
+
+
 class SampleSheetImportForm(forms.Form):
     title = forms.CharField(max_length=50)
     file = forms.FileField()
-
+    

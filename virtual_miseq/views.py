@@ -1,19 +1,21 @@
 # -*- coding: utf-8 -*-
+from .models import Experiment, Sample, IDMSUser,MiseqIndex,PoolNumberChoice,Treatment,CcleLibrary,ShrnaLibrary
 
+from django.views.generic import ListView
 from django.shortcuts import render, render_to_response, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
-from .models import Experiment, Sample, IDMSUser,MiseqIndex
 from django.template import RequestContext, loader
 from django.utils import timezone
 from django.core.context_processors import csrf
-from forms import ExperimentForm, SampleForm, SampleFormSet,SampleSheetImportForm
+from forms import ExperimentForm, SampleForm, SampleFormSet, SampleFormSet0, SampleSheetImportForm
 from django_datatables_view.base_datatable_view import BaseDatatableView
-import time
 from django.forms.models import model_to_dict
+from django.core.exceptions import ValidationError
 import json
 import uuid
 import csv
-
+import itertools
+import time
 
 
 
@@ -107,9 +109,17 @@ def index(request):
 
 def detail(request, experiment_id):
 	experiment = get_object_or_404(Experiment, experiment_id=experiment_id)
+
+	if 'delete_sam' in request.POST:
+		sam2delete = Sample.objects.get(id=request.POST.get('delete_sam'))
+		experiment.sample_set.remove(sam2delete)
+		return HttpResponseRedirect('/virtual/get/%s/#sample' % experiment.experiment_id)
+#return HttpResponseRedirect('/virtual/delete/%s/' % experiment.experiment_id)
+#		return HttpResponse('<script type="text/javascript">location.reload(true);</script>') 
+
 	return render(request, 'detailView/detail.html', {'experiment': experiment})
 
-#popupnew
+
 def new_exp(request, experiment_id=None):
 	def generate_sample_name(sample):
 
@@ -143,6 +153,7 @@ def new_exp(request, experiment_id=None):
                         sample_name = sample_name + '.' + sample.other_tag
                 return sample_name
 
+	iterator=itertools.count(1)
 	
 	if experiment_id:
 		experiment = get_object_or_404(Experiment, experiment_id=experiment_id)
@@ -189,17 +200,178 @@ def new_exp(request, experiment_id=None):
 	args.update(csrf(request))
 	args['expform'] = expform
 	args['samforms'] = samforms
+	args['iterator'] = iterator
 	return render_to_response('newExpView/new.html',args)
+
+
+def new_exp2(request, mode, experiment_id=None):
+
+	if experiment_id:
+                experiment = get_object_or_404(Experiment, experiment_id=experiment_id)
+		expform = ExperimentForm(instance=experiment)
+                #if experiment.user != request.user:
+#               return HttpResponseForbidden()
+        else:
+                experiment = Experiment()#(user=request.user)
+
+        if request.POST:
+                if 'create_exp' in request.POST:
+                        expform = ExperimentForm(request.POST, instance=experiment)
+			
+			if expform.is_valid():
+                          	new_exp = expform.save(commit=False)
+
+                   	        #automatic generate or modify fields
+                                #save modified form
+
+                      		new_exp.save()
+                               	expform.save_m2m()
+                                #sample forms
+
+                               	return HttpResponseRedirect('/virtual/new/confirm/%s/' % new_exp.experiment_id)
+		elif 'delete_exp' in request.POST:
+			if experiment_id is not None:
+                        	exp2delete = get_object_or_404(Experiment, experiment_id=experiment.experiment_id).delete()
+                        	return HttpResponseRedirect('/virtual/delete/confirm/%s/' % experiment.experiment_id)	
+			else:
+				return HttpResponseRedirect('/')
+        	elif 'cancel_exp' in request.POST:
+			return HttpResponseRedirect('/')
+
+        expform = ExperimentForm(instance=experiment)
+		
+        args = {}
+        args.update(csrf(request))
+        args['expform'] = expform
+	args['mode'] = mode
+        return render_to_response('newExpView/new2.html',args)
+
+
+def add_edit_sample(request,experiment_id, mode,sample_id=None):
+        def generate_sample_name(sample):
+
+                '''
+                naming standard:
+                CellLine.Library.TreatmentIfAny.shON/shOFF.time.A/B/C
+                Example: A549.K1_2.EZH2_150nM.shON.T21.A
+                '''
+                sample_name = ".".join([sample.cell_model.CCLE_name,sample.shRNA_library.LibName])
+
+                if len(sample.pool_number.all())>0:
+                	pool_str = '_P'
+                      	tmp = ''
+                       	for p in sample.pool_number.all():
+                		if not tmp:
+					 tmp = p.description
+				else:
+					tmp = '_'+p.description
+                        	pool_str += tmp
+                else:
+                      	 pool_str = '_PNone'
+
+                sample_name = sample_name + pool_str
+
+                if sample.treatment and sample.treatment_dose:
+                        treatment = '_'.join([sample.treatment.compoundName,str(sample.treatment_dose)])
+                        sample_name = '.'.join([sample_name,treatment])
+                shrna = 'shON'
+                if not sample.shRNA_on:
+                        shrna = 'shOFF'
+                sample_name = '.'.join([sample_name,shrna,''.join(['T',str(sample.time_in_days)]),sample.replicate])
+
+                if sample.other_tag:
+                        sample_name = sample_name + '.' + sample.other_tag
+                return sample_name
+
+	experiment = get_object_or_404(Experiment, experiment_id=experiment_id)	
+	title=''
+	if request.POST:
+		if request.POST.get('delete_sam', None):
+			return HttpResponse('<script type="text/javascript">window.close();window.opener.location.reload(true);</script>')
+		
+		samforms = SampleFormSet(request.POST,instance=experiment)	
+		
+		if samforms.is_valid():
+			if 1:#samforms.has_changed():
+				for samform in samforms:
+					if  mode == 'editsample':
+						if samform.is_valid() and samform is not None:
+							new_sam = samform.save(commit=False)
+							new_sam.save()
+							samform.save_m2m()		
+							new_sam.sample_name = generate_sample_name(new_sam)
+                    		        		new_sam.save()
+					if mode == 'addsample':
+						if samform.is_valid() and samform.has_changed() and samform is not None:
+                                                        new_sam = samform.save(commit=False)
+                                                        new_sam.save()
+                                                        samform.save_m2m()
+                                                        new_sam.sample_name = generate_sample_name(new_sam)
+                                                        new_sam.save()
+
+				
+				return HttpResponse('<script type="text/javascript">window.close();window.opener.location.reload(true);</script>')
+	
+	else:
+	        if mode == 'addsample':
+        	        title = 'Add Sample'
+                	if sample_id is None:
+                        	samforms = SampleFormSet()
+               		else:
+				targetSam = get_object_or_404(experiment.sample_set.all(),pk=sample_id)
+				init_data = {'cell_model':targetSam.cell_model,
+						'shRNA_on':targetSam.shRNA_on,
+						'shRNA_library':targetSam.shRNA_library,
+						'time_in_days':targetSam.time_in_days,
+					#	'pool_number':targetSam.pool_number,
+						'treatment':targetSam.treatment,
+						'treatment_dose':targetSam.treatment_dose,
+						#'replicate':targetSam.replicate,
+						'other_tag':targetSam.other_tag,
+						'comment':targetSam.comment
+						}
+				samforms = SampleFormSet(initial=[init_data])
+
+		elif mode == 'editsample':
+			title = 'Edit Sample'
+			if sample_id is None:	
+				samforms = SampleFormSet0(instance=experiment)
+			else:
+				targetSam = get_object_or_404(experiment.sample_set.all(),pk=sample_id)
+                        	samforms = SampleFormSet0(instance=experiment, queryset=Sample.objects.filter(id=sample_id))
+		else:
+			raise('Unknow URL parameter')
+
+        args = {}
+        args.update(csrf(request))
+        args['experiment_id'] = experiment_id
+	args['sample_id'] = sample_id
+	args['title'] = title
+        args['samforms'] = samforms
+	return render_to_response('newExpView/sample.html',args)
+
+
 
 def new_exp_example(request):
 	return render(request, 'newExpView/example.html')
 	
 
 
-def new_confirm(request,experiment_id):
-	return render_to_response('newExpView/confirm.html',{'experiment_id': experiment_id})
+def confirm(request,mode,experiment_id):
+	if mode == 'new':
+		title = 'Create New Experiment'
+	if mode == 'delete':
+		title = 'Delete Experiment'
 
-def export_csv(request,experiment_id):
+	args = {}
+	args.update(csrf(request))
+	args['experiment_id'] = experiment_id
+	args['title'] = title
+	args['mode'] = mode
+	return render_to_response('newExpView/confirm.html',args)
+		
+
+def export_samplesheet_csv(request,experiment_id):
 	curr_exp = get_object_or_404(Experiment, experiment_id=experiment_id)
 	response = HttpResponse(content_type='text/csv')
     	response['Content-Disposition'] = 'attachment; filename="SampleSheet_%s.csv"' % experiment_id
@@ -208,7 +380,7 @@ def export_csv(request,experiment_id):
     	writer.writerow(['IEMFileVersion',curr_exp.version,'','','','','','',])
 	writer.writerow(['Investigator Name'])
 	writer.writerow(['Experiment Name',curr_exp.title])
-	writer.writerow(['Date',curr_exp.experiment_date])
+	writer.writerow(['Date',curr_exp.experiment_date.date()])
 	writer.writerow(['Workflow',curr_exp.workflow])
 	writer.writerow(['Application',curr_exp.application])
 	writer.writerow(['Assay',curr_exp.assay])
@@ -233,7 +405,7 @@ def export_csv(request,experiment_id):
     	return response
 
 
-def import_csv(request,experiment_id):
+def import_samplesheet_csv(request,experiment_id):
 	if request.method == 'POST':
         	form = SampleSheetImportForm(request.POST, request.FILES)
         	if form.is_valid():
@@ -243,31 +415,72 @@ def import_csv(request,experiment_id):
         	form = SampleSheetImportForm()
     	return render_to_response('detailView/upload.html', {'form': form})
 
-'''
-def search_title(request):
-	if request.method == 'POST':
-		search_text = request.POST['search_text']
-	else:
-		search_text = ''
+#https://djangosnippets.org/snippets/1710/
+def respond_as_attachment(request, original_filename, media_path='media/'):
+    from urlparse import urlparse
+    domain = '{uri.scheme}://{uri.netloc}/'.format(uri=urlparse(request.build_absolute_uri()))
+    file_path = domain + media_path + original_filename[:-1]
+    fp = open(file_path, 'rb')
+    response = HttpResponse(fp.read())
+    fp.close()
+    type, encoding = mimetypes.guess_type(original_filename)
+    if type is None:
+        type = 'application/octet-stream'
+    response['Content-Type'] = type
+    response['Content-Length'] = str(os.stat(file_path).st_size)
+    if encoding is not None:
+        response['Content-Encoding'] = encoding
 
-	experiments = Experiment.objects.filter(title__contains=search_text)
-	
-	return render_to_response('listView/ajax_search.html',{'experiments' : experiments})
-'''
+    # To inspect details for the below code, see http://greenbytes.de/tech/tc2231/
+    if u'WebKit' in request.META['HTTP_USER_AGENT']:
+        # Safari 3.0 and Chrome 2.0 accepts UTF-8 encoded string directly.
+        filename_header = 'filename=%s' % original_filename.encode('utf-8')
+    elif u'MSIE' in request.META['HTTP_USER_AGENT']:
+        # IE does not support internationalized filename at all.
+        # It can only recognize internationalized URL, so we do the trick via routing rules.
+        filename_header = ''
+    else:
+        # For others like Firefox, we follow RFC2231 (encoding extension in HTTP headers).
+        filename_header = 'filename*=UTF-8\'\'%s' % urllib.quote(original_filename.encode('utf-8'))
+    response['Content-Disposition'] = 'attachment; ' + filename_header
+    return response
+
+
+
 
 def signup(request):
 	return render_to_response('signView/signup.html')
 
-def login(request):
-        return render_to_response('signView/login.html')
-
 def console(request):
         return render_to_response('consoleView/userConsole.html')
 
+def timeline(request,user='jiyang.yu2@pfizer.com'):
+        experiments = Experiment.objects.filter(investigator__EmailAddress=user).order_by('-created_date')
+	user = IDMSUser.objects.get(EmailAddress=user)
+	args = {}
+        args.update(csrf(request))
+        args['experiments'] = experiments
+	args['user'] = user
+	return render_to_response('consoleView/timeline.html',args)
+	
 
 
 
+class IDMSUserList(ListView):
+	model = IDMSUser
 
+class CcleLibraryList(ListView):
+        model = CcleLibrary
+
+class MiseqIndexList(ListView):
+        model = MiseqIndex
+
+class ShrnaLibraryList(ListView):
+        model = ShrnaLibrary
+
+
+class TreatmentList(ListView):
+        model = Treatment
 
 
 

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{%block script%}
+<script src="{% static "js/jquery.dataTables.js" %}"></script>
+<link rel="stylesheet" href="{% static "css/jquery.dataTables.css" %}" />
+<script>
+$(document).ready(function() {
+    $('#sample').dataTable( {
+	"pageLength": 100,
+	"columnDefs": [
+            {
+                // The `data` parameter refers to the data for the cell (defined by the
+                // `data` option, which defaults to the column being worked with, in
+                // this case `data: 0`.
+                "render": function ( data, type, row ) {
+                    return data;
+                },
+                "targets": 0
+            },
+            //{ "visible": false,  "targets": [ 4 ] }
+        ]
+    } );
+} );
+</script>
+
+
+{%endblock%}
+
+{% block content %}
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading">
+    <h2 style="float:left;margin-top: 2px;margin-bottom: 0px;margin-right: 50px;">MiSeq Index</h2>
+      <input type="submit" class="btn btn-default" style="position:relative;margin-right: 50px;" value="Submit Modification Request" onclick="popupwindow('/virtual/miseqindex/request/','',700,700)">
+     <a href="/media/db/latest/CcleLibrary.xls" class="btn btn-info" style="position:relative;float:right;">Export</a>
+  </div>
+ </div>
+
+
+<table id="sample" class="display" style="width: 90%;margin-left:auto;margin-right:auto;">
+        <thead>
+            <tr>
+                <th>I7_Index_ID</th>
+                <th>index</th>
+                <th>approvalStatus</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+
+        {% for item in object_list %}
+
+         <tr>
+                <td>{{item.I7_Index_ID}}</td>
+                <td>{{item.index}}</td>
+                <td>{{item.get_approvalStatus_display}}</td>
+
+	</tr>
+
+
+{% endfor %}
+        </tbody>
+</table>
+
+
+
+{% endblock %}

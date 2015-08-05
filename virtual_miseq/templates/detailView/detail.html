@@ -1,14 +1,13 @@
 {% extends "base.html" %}
-<html>
 {% load staticfiles %}
 {%block script%}
 <script src="{% static "js/jquery.dataTables.js" %}"></script>
 <link rel="stylesheet" href="{% static "css/jquery.dataTables.css" %}" />
-
 <script>
 $(document).ready(function() {
     $('#sample').dataTable( {
-        "columnDefs": [
+        "pageLength": 20,
+	"columnDefs": [
             {
                 // The `data` parameter refers to the data for the cell (defined by the
                 // `data` option, which defaults to the column being worked with, in
@@ -24,19 +23,26 @@ $(document).ready(function() {
 } );
 </script>
 
+<script>
+function popupwindow(url, title, w, h) {
+  var left = (screen.width/2)-(w/2);
+  var top = (screen.height/2)-(h/2);
+  return window.open(url, title, 'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=no, copyhistory=no, width='+w+', height='+h+', top='+top+', left='+left);
+}
+</script>
+
 
 {%endblock%}
 {% block content %}
-<body>
 
 <ul class="breadcrumb">
   <li><a href="/">Home</a></li>
-  <li><a href="/virtual">Planned MiSeq</a></li>
+  <li><a href="/virtual/search">Planned MiSeq</a></li>
   <li class="active">Experiment Detail</li>
 </ul>
 
 
-<div style="width: 90%;margin-left:auto;margin-right:auto;overflow-x: scroll;overflow-y: hidden;">
+<div style="width: 95%;margin-left:auto;margin-right:auto;overflow-x: scroll;overflow-y: hidden;">
 <div style="min-height:10px;width: 40%;margin-left:auto;">
 <textarea rows="1" cols="1" style="background:#FFFFFF" onclick="this.focus();this.select()" readonly="readonly">http://rnai.pfizer.com/virtual/get/{{experiment.experiment_id}}/</textarea>
 </div>
@@ -56,7 +62,7 @@ $(document).ready(function() {
 	</div>
 	<div class="well" style="margin-bottom: 2px;padding:5px;"><strong>IEMFileVersion: </strong> {{experiment.version}}</div>
 	<div class="well" style="margin-bottom: 2px;padding:5px;"><strong>Experiment Name: </strong> {{experiment.title}}</div>
-	<div class="well" style="margin-bottom: 2px;padding:5px;"><strong>Date: </strong>{{ experiment.experiment_date }}</div>
+	<div class="well" style="margin-bottom: 2px;padding:5px;"><strong>Date: </strong>{{ experiment.get_standard_created_date  }}</div>
 	<div class="well" style="margin-bottom: 2px;padding:5px;"><strong>Workflow: </strong> {{experiment.workflow}}</div>
 	<div class="well" style="margin-bottom: 2px;padding:5px;"><strong>Application: </strong> {{experiment.application}}</div>
 	 <div class="well" style="margin-bottom: 2px;padding:5px;"><strong>Assay: </strong> {{experiment.assay}}</div>
@@ -67,11 +73,14 @@ $(document).ready(function() {
 
   </div>
 </div>
+<hr>
 <div class="panel panel-info" style="width:95%;margin-left:auto;margin-right:auto;">
-  <div class="panel-heading">
+  <div class="panel-heading" >
     <h3>Samples</h3>
   </div>
 </div>
+
+{% if experiment.sample_set.all%}
 
 <table id="sample" class="display" style="width: 95%;margin-left:auto;margin-right:auto;">
         <thead>
@@ -79,36 +88,18 @@ $(document).ready(function() {
                 <th>Sample_ID</th>
                 <th>Cell Model</th>
 		<th>shRNA Library</th>
+		<th>Pool(s)</th>
                 <th>I7_Index_ID</th>
                 <th>index</th>
-		<th>shRNA ON/OFF</th>
+		<th>shRNA</th>
 		<th>Time (days)</th>
 		<th>Replicate</th>
-		<th>Status</th>
-		<th>Comment</th>
-
+		<th>Treatment(dose)</th>
+		<th>Actions</th>
             </tr>
         </thead>
 
-        <tfoot>
-            <tr>
-               <th>Sample_ID</th>
-		<th>Cell Model</th>
-		<th>shRNA Library</th>
-                <th>Sample_Name</th>
-                <th>I7_Index_ID</th>
-                <th>index</th>
-                <th>shRNA ON/OFF</th>
-		<th>Time (days)</th>
-                <th>Replicate</th>
-		<th>Status</th>
-		<th>Comment</th>
-	    </tr>
-        </tfoot>
 	<tbody>
-
-{% if experiment.sample_set.all%}
-
 
 	{% for sample in experiment.get_sorted_sample_set %}
 
@@ -117,51 +108,42 @@ $(document).ready(function() {
 		<td>S{{forloop.counter}}</td>
                 <td>{{sample.cell_model.CCLE_name}}</td>
 		<td>{{sample.shRNA_library.LibName}}</td>
-                <td>{{sample.index.I7_Index_ID}}</td>
-                <td>{{ sample.index.index }}</td>
-                <td>{{sample.shRNA_on}}</td>
+                <td>{{sample.get_pool_numbers_display}}</td>
+		<td>{{sample.index.I7_Index_ID}}</td>
+                <td>{{sample.index.index}}</td>
+                <td>{{sample.get_shRNA_on_display}}</td>
 		<td>{{sample.time_in_days}}</td>
-                <td>{{ sample.replicate}}</td>
-		<td>{{sample.finish_flag}}</td>
-		<td>{{sample.comment}}</td>
+                <td>{{sample.replicate}}</td>
+		<td>{{sample.get_treatment_dosage_display}}</td>
+		<td>
+		{% csrf_token %}
+			<button type="submit" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;" value="{{sample.id}}" onclick="popupwindow('/virtual/get/{{experiment.experiment_id}}/editsample/{{sample.id}}/','Edit Sample',700,700)">Edit</button>
+			<button type="submit" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;" value="{{sample.id}}" onclick="popupwindow('/virtual/get/{{experiment.experiment_id}}/addsample/{{sample.id}}/','New Sample',700,700)">Copy</button>
+			<button type="submit" class="btn btn-warning btn-xs" style="position:relative;margin-right: 5px;" name='delete_sam' value="{{sample.id}}" onclick="return confirm('Are you sure you want to DELETE this sample?');">Delete</button>
+		</td>
          </tr>
 
 
-<!--
-
-<div class="panel panel-info" style="width:100%;float:right;">
-  <div class="panel-heading">
-    <h3>Samples #{{ forloop.counter }} | Replicate: {{sample.replicate}}</h3>
-  </div>
-  <div class="panel-body">
-        <div class="well well-sm" style="margin-bottom: 2px;"><strong>Same Name: </strong>{{sample.sample_name}}</div>
-        <div class="well well-sm" style="margin-bottom: 2px;"><strong>Index: </strong>{{ sample.index }}</div>
-        <div class="well well-sm" style="margin-bottom: 2px;"><strong>Creator: </strong>{{sample.created_by}}</div>
-        <div class="well well-sm" style="margin-bottom: 2px;"><strong>Sample Creation Date: </strong>{{sample.created_date}}</div>
-  </div>
-</div>
-
---!>
 {% endfor %}
         </tbody>
 </table>
 
 {% else %}
-  <div class="panel-body">
+  <div class="panel-body" style="width: 95%;margin-left:auto;margin-right:auto;">
         <div class="well well-sm" style="margin-bottom: 2px;"><strong>No Sample added for this experiment</div>
   </div>
 
-
 {% endif %}
 <div style="position:relative;text-align:center;width=90%;">
-<a href="/virtual/edit/{{experiment.experiment_id}}#addSample" class="btn btn-primary" style="position:relative;margin-right: 50px;">Edit Sample</a>
 
-  <a href="/virtual/export/{{experiment.experiment_id}}" class="btn btn-primary" style="position:relative;">Generate SampleSheet</a>
+<input type="submit" class="btn btn-primary" style="position:relative;margin-right: 50px;" value="Add New Sample" onclick="popupwindow('/virtual/get/{{experiment.experiment_id}}/addsample/','Add Sample',950,950)">
+
+<input type="submit" class="btn btn-primary" style="position:relative;margin-right: 50px;" value="Edit Existing Samples" onclick="popupwindow('/virtual/get/{{experiment.experiment_id}}/editsample/','Edit Samples',950,950)">
+
+<a href="/virtual/export/{{experiment.experiment_id}}" class="btn btn-primary" style="position:relative;">Generate SampleSheet</a>
 </div>
 </div>
 <hr>
-</body>
 
 {% endblock %}
 
-</html>

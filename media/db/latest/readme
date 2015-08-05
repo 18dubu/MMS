@@ -1,0 +1,4 @@
+#rename the .sql files to user.sql, cell_models.sql, vector_library.sql 
+
+
+psql -U root -d miseq_db -f /data/www/rnai.pfizer.com/django-MMS/db/latest/user.sql

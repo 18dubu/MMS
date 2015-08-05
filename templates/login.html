@@ -1,0 +1,50 @@
+{% load staticfiles %}
+{% block script %}
+
+        <link rel='stylesheet' href='http://fonts.googleapis.com/css?family=PT+Sans:400,700'>
+        <link rel="stylesheet" href="{% static "login/css/reset.css" %}" />
+        <link rel="stylesheet" href="{% static "login/css/supersized.css" %}"/>
+        <link rel="stylesheet" href="{% static "login/css/style.css" %}"/>
+
+
+
+{% endblock %}
+
+{% block content %}
+<body>
+
+        <div class="page-container">
+            <h1>LOG IN</h1>
+         <form action="/accounts/login/" method="post">{% csrf_token %}
+	    <div><p><font color="red"><strong>{{ntid_error}}</strong></font></p></div>
+	    <input type="text" name="username" value="{{NTID}}" id="username" placeholder="User Name (Pfizer NTID)">
+	    <div><font color="red"><strong>{{passwd_error}}</strong></font></div>
+	    <input type="password" name="password" value="" id="password" placeholder="Pfizer Password">
+	    <div><font color="red"><strong>{{validate_error}}</strong></font></div>
+            <button type="submit">LOG IN</button>
+	    <div  class="error"><span>+</span></div>
+	  </form>
+
+            <div class="connect">
+
+		<p><a href='/help/#login'>Problem Login</a></p>
+
+                <!--
+		<p>Or <a href='/account/register/'>Sign Up</a></p>
+		<p>
+                    <a class="facebook" href=""></a>
+                    <a class="twitter" href=""></a>
+                </p>
+		--!>
+            </div>
+        </div>
+
+        <!-- Javascript -->
+        <script src="{% static "login/js/jquery-1.8.2.min.js" %}"></script>
+	<script src="{% static "login/js/supersized.3.2.7.min.js" %}"></script>
+        <script src="{% static "login/js/supersized-init.js" %}"></script>
+        <script src="{% static "login/js/supersized-init.js" %}"></script>
+
+    </body>
+
+{% endblock %}

@@ -30,4 +30,14 @@ urlpatterns = [
 	#url(r'lookups/', include(ajax_select_urls)),
 	url(r'^selectable/', include('selectable.urls')),
 	url(r'^contact/', include('envelope.urls')),
+	
+	#login logout
+	url(r'^accounts/login/$',  'MMS.views.login'),
+    	url(r'^accounts/auth/$',  'MMS.views.auth_view'),    
+    	url(r'^accounts/logout/$', 'MMS.views.logout'),
+    	url(r'^accounts/loggedin/$', 'MMS.views.loggedin'),
+    	url(r'^accounts/invalid/$', 'MMS.views.invalid_login'),    
+   	url(r'^accounts/register/$', 'MMS.views.register_user'),
+    	url(r'^accounts/register_success/$', 'MMS.views.register_success'),
+	
 ]

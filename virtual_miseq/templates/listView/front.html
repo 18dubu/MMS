@@ -14,6 +14,8 @@
 <script>
 $(document).ready(function() {
     $('#recent').dataTable( {
+	"order": [[ 2, "desc" ]],
+	"pageLength": 30,
         "columnDefs": [
             {
                 // The `data` parameter refers to the data for the cell (defined by the
@@ -30,6 +32,19 @@ $(document).ready(function() {
 } );
 </script>
 
+<script type="text/javascript">
+    $(document).ready(function(){
+    //Check if the current URL contains '#'
+    if(document.URL.indexOf("#")==-1){
+        // Set the URL to whatever it was plus "#".
+        url = document.URL+"#";
+        location = "#";
+
+        //Reload the page
+        location.reload(true);
+    }
+});
+</script>
 
 
 {% endblock%}
@@ -73,8 +88,8 @@ $(document).ready(function() {
 
 <div class="page-wrapper">
 
-<div class="jumbotron" style="margin-bottom: 0px;">
-  <h2 align='middle'>Latest Experiments:</h2>
+<div class="jumbotron" style="margin-bottom: 0px;position:relative;text-align:center;">
+  <h2 style="align:'middle';position:relative;">Latest Experiments</h2>
 
 
 <table id="recent" class="display" cellspacing="0" width="90%">
@@ -83,22 +98,12 @@ $(document).ready(function() {
                 <th>Title</th>
                 <th>Project</th>
 		<th>Date</th>
+		<th>Sample Count</th>
                 <th>Investigators</th>
                 <th>Created By</th>
-		<th>Action</th>
+		<th>Actions</th>
 	    </tr>
         </thead>
-
-        <tfoot>
-            <tr>
-            	<th>Title</th>
-                <th>Project</th>
-		<th>Date</th>
-                <th>Investigators</th>
-                <th>Created By</th>
-                <th>Action</th>
-	    </tr>
-        </tfoot>
 
         <tbody>
 		{% for experiment in experiments %}
@@ -106,16 +111,21 @@ $(document).ready(function() {
 				<td><a href="{{experiment.get_absolute_url}}">{{experiment.title}}</a></td>
                                 <td>{% autoescape off %}{{experiment.get_taged_project_name}} {% endautoescape %}</td>
 				<td>{{ experiment.get_standard_created_date }}</td>
-                                <td>{% autoescape off %}{{experiment.get_taged_investigator_name}} {% endautoescape %}</td>
+                                <td>{{ experiment.sample_set.count }}</td>
+				<td>{% autoescape off %}{{experiment.get_taged_investigator_name}} {% endautoescape %}</td>
                                 <td>{{experiment.created_by.FirstName}}</td>
-                                <td><a href="{{experiment.get_absolute_url}}">Add sample</a></td>
+                                <td>
+				<a href="/virtual/edit/{{experiment.experiment_id}}/" type="submit" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;">Edit Experiment</a>
+				<a href="/virtual/get/{{experiment.experiment_id}}/#sample" type="submit" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;">Edit sample</a>		
+				<a href="/virtual/export/{{experiment.experiment_id}}" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;">Generate SampleSheet</a>
+				</td>
 			</tr>
 
 		{% endfor %}
         </tbody>
 </table>
 
- <p style="text-align: center;"><a href='/virtual/search/' class="btn btn-primary btn-lg">Advanced Search</a></p>
+ <p style="text-align: center;"><a href='/virtual/search/' class="btn btn-primary btn-lg">Advance Search</a></p>
 </div>
 
 
@@ -148,10 +158,11 @@ $(document).ready(function() {
 <div class="IVlabLabAreas small-12 columns">  
   <a href="#" class="btn btn-default btn-lg btn-block">Related Systems</a>
 
+<a href='http://idms.pfizer.com/'>
   <div class="area small-12 medium-6 large-4 columns" style="background-image:url({% static "images/bg-lab1.jpg" %});">
     <div class="areaContent small-12 columns">
       <h4>Pfizer IDMS System</h4>
-      <p><a><font color="orange">Information Data Management System (IDMS)</a></p><p><a><font color="orange">Proteomics and Metabolomics Laboratory</a></p><p><a><font color="orange">Tumor Activities</a></p>
+      <p><a href='http://idms.pfizer.com/adc_targets.html'><font color="orange">ADC Targets</a></p><p><a href='http://idms.pfizer.com/studies.html'><font color="orange">Studies</a></p><p><a href='http://idms.pfizer.com/review/summary.html'><font color="orange">Target Review(login required)</a></p><p><a href='http://idms.pfizer.com/idms/login.php'><font color="orange">Lab Access(login required)</a></p>
     </div>
   </div>
   </a>
@@ -160,7 +171,7 @@ $(document).ready(function() {
   <div class="area small-12 medium-6 large-4 columns" style="background-image:url({% static "images/bg-lab2.jpg" %});">
     <div class="areaContent small-12 columns">
       <h4>Pfizer Computational Biology</h4>
-      <p><a href="http://lj-compbio.pfizer.com/#t1"><font color="orange">Services</a></p><p><a href="http://lj-compbio.pfizer.com/#t1"><font color="orange">Resources</a></p>
+      <p><a href="http://lj-compbio.pfizer.com/#t1"><font color="orange">Services</a></p><p><a href="http://lj-compbio.pfizer.com/#t2"><font color="orange">Resources</a></p><p><a href="http://lj-compbio.pfizer.com/#t3"><font color="orange">Internal Shared Tools</a></p><p><a href="http://lj-compbio.pfizer.com/#t4"><font color="orange">Internal Shared Data</a></p>
     </div>
   </div>
   </a>

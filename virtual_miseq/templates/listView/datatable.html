@@ -15,6 +15,7 @@ $.extend( $.fn.dataTable.defaults, {
 
 $(document).ready(function() {
     $('#recent').dataTable( {
+	"pageLength": 100,
 	//"oSearch": {"sSearch": "{{g}}"},
 	"aoSearchCols": [null,{ "sSearch": "{{p}}"},null,{ "sSearch": "{{u}}"},null,null],	
 
@@ -34,6 +35,20 @@ $(document).ready(function() {
 } );
 </script>
 
+<script type="text/javascript">
+    $(document).ready(function(){
+    //Check if the current URL contains '#'
+    if(document.URL.indexOf("#")==-1){
+        // Set the URL to whatever it was plus "#".
+        url = document.URL+"#";
+        location = "#";
+
+        //Reload the page
+        location.reload(true);
+    }
+});
+</script>
+
 
 
 {% endblock%}
@@ -45,8 +60,8 @@ $(document).ready(function() {
   <li><a href="/virtual">Virtual MiSeq</a></li>
   <li class="active">Create New Experiment</li>
 </ul>
-
-
+<hr>
+<!--
 <ul class="nav nav-tabs">
   <li class=""><a href="#home" data-toggle="tab" aria-expanded="false">Full Text Search</a></li>
   <li class="active"><a href="#profile" data-toggle="tab" aria-expanded="true">Key Word Search</a></li>
@@ -76,7 +91,7 @@ $(document).ready(function() {
   <p></p>
   </div>
 </div>
-
+--!>
 <table id="recent" class="display" cellspacing="0" width="90%">
         <thead>
             <tr>

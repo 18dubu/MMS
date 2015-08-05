@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{%block script%}
+<script src="{% static "js/jquery.dataTables.js" %}"></script>
+<link rel="stylesheet" href="{% static "css/jquery.dataTables.css" %}" />
+<script>
+$(document).ready(function() {
+    $('#sample').dataTable( {
+	"scrollX": true,
+	"pageLength": 100,
+	"columnDefs": [
+            {
+                // The `data` parameter refers to the data for the cell (defined by the
+                // `data` option, which defaults to the column being worked with, in
+                // this case `data: 0`.
+                "render": function ( data, type, row ) {
+                    return data;
+                },
+                "targets": 0
+            },
+            //{ "visible": false,  "targets": [ 4 ] }
+        ]
+    } );
+} );
+</script>
+
+
+{%endblock%}
+
+{% block content %}
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading">
+    <h2 style="float:left;margin-top: 2px;margin-bottom: 0px;margin-right: 50px;">shRNA Library</h2>
+      <input type="submit" class="btn btn-default" style="position:relative;margin-right: 50px;" value="Submit Modification Request" onclick="popupwindow('/virtual/shrnalibrary/request/','',700,700)">
+    <a href="/media/db/latest/ShrnaLibrary.xls" class="btn btn-info" style="position:relative;float:right;">Export</a>
+  </div>
+ </div>
+
+
+<table id="sample" class="display" style="width: 95%;margin-left:auto;margin-right:auto;">
+        <thead>
+            <tr>
+                <th>LibName</th>
+		<th>LibName_Full</th>
+                <th>Description</th>
+                <th>Source</th>
+                <th>Vector</th>
+                <th>Num_Pools</th>
+                <th>CreationDate</th>
+		<th>Num_shRNAs</th>
+                <th>Num_Genes</th>
+                <th>Num_shRNAsPerGene</th>
+                <th>AnnotationFile</th>
+                <th>DNAStringSet_Object</th>
+                <th>approvalStatus</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+
+        {% for item in object_list %}
+
+
+         <tr>
+                <td>{{item.LibName}}</td>
+        	<td>{{item.LibName_Full}}</td>
+                <td>{{item.Description}}</td>
+                <td>{{item.Source}}</td>
+                <td>{{item.Vector}}</td>
+                <td>{{item.Num_Pools}}</td>
+                <td>{{item.CreationDate}}</td>
+		<td>{{item.Num_shRNAs}}</td>
+                <td>{{item.Num_Genes}}</td>
+                <td>{{item.Num_shRNAsPerGene}}</td>
+                <td>{{item.AnnotationFile}}</td>
+                <td>{{item.DNAStringSet_Object}}</td>
+                <td>{{item.get_approvalStatus_display}}</td>
+
+	</tr>
+
+
+{% endfor %}
+        </tbody>
+</table>
+
+
+
+{% endblock %}

@@ -10,7 +10,7 @@
 <ul class="breadcrumb">
   <li><a href="/">Home</a></li>
   <li><a href="/virtual">Virtual MiSeq</a></li>
-  <li class="active">Create New Experiment</li>
+  <li class="active">{{title}}</li>
 </ul>
 
 <div class="alert alert-dismissible alert-success">
@@ -18,24 +18,18 @@
   <strong>Congratuations!</strong> Your action is successfully saved!
 </div>
 
-<div align='middle'>
+<div style="position:relative;text-align:center;">
 <br>
 
-<a href="/virtual/" class="btn btn-primary btn-lg">Go Back</a>
+{%if mode == "new"%}
+<a href="/virtual/edit/{{ experiment_id }}/" class="btn btn-primary btn-lg" style="margin-right: 20px;">Back to Edit</a>
+<a href="/virtual/get/{{ experiment_id }}/" class="btn btn-primary btn-lg" style="margin-right: 20px;">Add Samples</a>
+<a href="/virtual/new/" class="btn btn-primary btn-lg" style="margin-right: 20px;">Add Another Experiment</a>
 
-
-<div class="btn-group">
-  <a href="/virtual/get/{{ experiment_id }}/" class="btn btn-primary btn-lg">Review</a>
-  <a href="#" class="btn btn-primary dropdown-toggle btn-lg" data-toggle="dropdown" aria-expanded="false"><span class="caret"></span></a>
-  <ul class="dropdown-menu">
-    <li><a href="#">Edit</a></li>
-    <li><a href="#">Delete</a></li>
-    <li class="divider"></li>
-    <li><a href="#">Sharable link</a></li>
-  </ul>
-</div>
-
-<a href="/virtual/new/" class="btn btn-primary btn-lg">Continue Adding</a>
+{%else%}
+<a href="/virtual/" class="btn btn-primary btn-lg" style="margin-right: 20px;">Main Page</a>
+<a href="/virtual/new/" class="btn btn-primary btn-lg" style="margin-right: 20px;">Add Another Experiment</a>
+{%endif%}
 
 </div>
 <br>
