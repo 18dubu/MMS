@@ -1,0 +1,51 @@
+<!doctype html>
+
+{% extends "base.html" %}
+{% load staticfiles %}
+{%block script%}
+	<link rel="stylesheet" href="{% static "timeline/css/timeline-reset.css"%}"/> <!-- CSS reset -->
+	<link rel="stylesheet" href="{% static "timeline/css/timeline-style.css"%}"/> <!-- Resource style -->
+
+	<script src="{% static "timeline/js/timeline-modernizr.js" %}"></script> <!-- Modernizr -->
+	<script src="{% static "timeline/js/timeline-main.js" %}"></script> <!-- Resource jQuery -->
+
+{%endblock%}
+{% block content %}
+
+<body >
+<ul class="breadcrumb">
+  <li><a href="/">Home</a></li>
+  <li><a href="/virtual/">Planned MiSeq</a></li>
+  <li><a href="/virtual/console/">User Console</a></li>
+  <li class="active">Timeline</li>
+</ul>
+
+
+
+	<div class="box-container" style='width:50%'>
+	<div class="content">
+		<header style=" margin-top: 0px; margin-bottom: 50px; padding-bottom: 0px; height: 100px; padding-top: 0px; ">
+		<div style="text-align: center;">
+		<h1 style="text-align: center; vertical-align: middle;display: inline-block;"> {{user.username}}'s Timeline</h1>			
+		</div>
+		</header>
+	<section id="cd-timeline" class="cd-container">
+		{% for experiment in experiments %}
+		<div class="cd-timeline-block">
+			<div class="cd-timeline-img cd-movie">
+			</div> <!-- cd-timeline-img -->
+			<div class="cd-timeline-content">
+				<p>Project: {{experiment.project_name}}</p>
+				<h2>Experiment: {{experiment.title}}</h2>
+				<a href="{{experiment.get_absolute_url}}" class="cd-read-more">Details</a>
+				<span class="cd-date">{{experiment.get_standard_created_date}}</span>
+			</div> <!-- cd-timeline-content -->
+		</div> <!-- cd-timeline-block -->
+		{% endfor %}
+	</section> <!-- cd-timeline -->
+	</div>
+	</div>
+
+ 
+</body>
+{% endblock %}

@@ -1,5 +1,5 @@
 from django import forms
-from models import Experiment, Sample
+from models import Experiment, Sample, Log
 from django.forms.models import inlineformset_factory
 from django.utils.safestring import mark_safe
 from django.contrib.admin import widgets     
@@ -118,13 +118,14 @@ class ExperimentForm(forms.ModelForm):
 		#if instance and instance.pk:
             	#	self.fields['experiment_id'].widget.attrs['readonly'] = True
 	        	#self.fields['samples']=forms.ModelChoiceField(queryset=Experiment.objects.all())
-
+	'''
 	def clean_title(self):
 		title = self.cleaned_data['title']
-		if Experiment.objects.filter(title=title).count() > 0:
-			raise ValidationError('This Experiment Title already exists! Please select a new name.')
+		if Experiment.objects.get(title=title).pk >0:
+			raise ValidationError('ss')
+			#raise ValidationError('This Experiment Title already exists! Please select a new name.')
 		return title
-
+	'''
 	def clean_experiment_id(self):
 		experiment_id = self.cleaned_data['experiment_id']
         	if experiment_id is None:
@@ -140,6 +141,18 @@ class ExperimentForm(forms.ModelForm):
         	return cleaned_data
 	
 
+
+class LogForm(forms.ModelForm):
+	class Meta:
+		model = Log
+		exclude = ('related_exp','related_sam','created_by','created_date','updated_by','updated_date','download_by','download_date',)
+	writer = selectable.AutoCompleteSelectMultipleField(
+                lookup_class=InvestigatorLookup,
+                label='Collaborators (Type to search)',
+		required=False,
+		)
+
+	
 
 class SampleForm(forms.ModelForm):
 	class Meta:

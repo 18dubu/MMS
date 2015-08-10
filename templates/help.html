@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+{% extends "base.html" %}
+
+{% load staticfiles %}
+
+{%block content  %}
+<hr>
+<div id='about'  style="width: 90%;margin-left:auto;margin-right:auto;">
+ <div class="panel panel-primary">
+  <div class="panel-heading">
+    <h2 >About</h2>
+  </div>
+ <div class="panel-body">
+        <div class="well" style="margin-bottom: 2px;">
+	<h3><strong>About Pfizer MMS system</strong></h3>
+	<li><h4>Pfizer MiSeq Management System (MMS) is a web-based tools for tracking and managing MiSeq Experiments conducted within Pfizer Oncology Research Group. In order to facility data <a href="https://en.wikipedia.org/wiki/Interoperability"> interoperability</a>, controled libraries were used when creating new MiSeq Experiments (sample sheets). The MMS system can be used to <a href='/virtual/new/'>create</a>, edit, export and share MiSeq Experiments. Also, it provides a <a href='/virtual/search/'>customized instant search</a> (Ajax search) option, enabling a systemic view of the current experiments under conduction.</h4></li>
+	<li><h4>For more information, please <a href='/contact/'>contact us</a>.</h4></li>
+	</div>
+  </div>
+ </div>
+</div>
+
+<div id='login'  style="width: 90%;margin-left:auto;margin-right:auto;">
+ <div class="panel panel-primary">
+  <div class="panel-heading">
+    <h2 >Login</h2>
+  </div>
+ <div class="panel-body">
+        <div class="well" style="margin-bottom: 2px;">
+        <h3><strong>Problem Login</strong></h3>
+        <li><h4>Current Pfizer MMS system use Pfizer login system (with NTID and Pfizer password). Please check with Pfizer  <a href="https://password.pfizer.com/">Password On Demand</a> when having problems.</h4></li>
+        <li><h4>For current version, we do not allow individual signup. Please <a href='/contact/'>contact us</a> for inquiries.</h4></li>
+	<li><h4>Current default domain is "AMER\". If you are not within this domain and want to login to the system, please <a href='/contact/'>contact us</a>.</h4></li>
+	<li><h4>For more information, please <a href='/contact/'>contact us</a>.</h4></li>
+        </div>
+ 
+
+ </div>
+ </div>
+</div>
+
+<div id='vocab'  style="width: 90%;margin-left:auto;margin-right:auto;">
+ <div class="panel panel-primary">
+  <div class="panel-heading">
+    <h2 >Other</h2>
+  </div>
+ <div class="panel-body">
+        <div class="well" style="margin-bottom: 2px;">
+	<h3><strong>Problem</strong></h3>
+	<li><h4>For more information, please <a href='/contact/'>contact us</a>.</h4></li>
+	</div>
+  </div>
+ </div>
+</div>
+
+
+{%endblock%}

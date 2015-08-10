@@ -1,0 +1,69 @@
+
+<script>
+$.extend( $.fn.dataTable.defaults, {
+    "searching": true,
+    "ordering": true
+} );
+
+$(document).ready(function() {
+    $('#recent').dataTable( {
+        "pageLength": 100,
+        "order": [[ 2, "desc" ]],
+	//"oSearch": {"sSearch": "{{g}}"},
+        "aoSearchCols": [null,{ "sSearch": "{{p}}"},null,{ "sSearch": "{{u}}"},null,null],
+
+        "columnDefs": [
+            {
+                // The `data` parameter refers to the data for the cell (defined by the
+                // `data` option, which defaults to the column being worked with, in
+                // this case `data: 0`.
+		className: "dt-center",
+		"render": function ( data, type, row ) {
+                    return data;
+                },
+                "targets": "_all"//[0,1,2,3,4,5]
+            },
+            //{ "visible": false,  "targets": [ 4 ] }
+        ]
+    } );
+} );
+</script>
+<table id="recent" class="display" cellspacing="0" width="90%">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Project</th>
+                <th>Creation Date</th>
+		<th>Sample Count</th>
+                <th>Investigators</th>
+                <th>Created By</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        <tfoot>
+        </tfoot>
+
+        <tbody>
+                {% for experiment in experiments %}
+                        <tr>
+                                <td><a href="{{experiment.get_absolute_url}}">{{experiment.title}}</a></td>
+                                <td>{% autoescape off %}{{experiment.get_taged_project_name}} {% endautoescape %}</td>
+                                <td>{{ experiment.get_standard_created_date }}</td>
+                                <td>{{ experiment.sample_set.count }}</td>
+				<td>{% autoescape off %}{{experiment.get_taged_investigator_name}} {% endautoescape %}</td>
+                                <td>{% autoescape off %}{{experiment.get_taged_created_by_name}}{% endautoescape %}</td>
+                                 <td>
+				{%if experiment.created_by.NTID == user.username or user.username in auth_users|key:experiment.experiment_id %}
+                                <a href="/virtual/edit/{{experiment.experiment_id}}/" type="submit" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;">Edit Experiment</a>
+                                <a href="/virtual/get/{{experiment.experiment_id}}/#sample" type="submit" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;">Edit sample</a>
+                                {%endif%}
+				<a href="/virtual/export/{{experiment.experiment_id}}/samplesheet/" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;">Generate SampleSheet</a>
+                                </td>
+
+                        </tr>
+
+                {% endfor %}
+        </tbody>
+</table>
+

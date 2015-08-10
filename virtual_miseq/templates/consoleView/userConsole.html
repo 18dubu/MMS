@@ -8,29 +8,6 @@
 <link rel="stylesheet" href="{% static "css/jquery.dataTables.css" %}" />
 
 
-</script>
-
-<script>
-$(document).ready(function() {
-    $('#recent').dataTable( {
-        "columnDefs": [
-            {
-                // The `data` parameter refers to the data for the cell (defined by the
-                // `data` option, which defaults to the column being worked with, in
-                // this case `data: 0`.
-                "render": function ( data, type, row ) {
-                    return data +' ('+ row[4]+')';
-                },
-                "targets": 0
-            },
-            { "visible": false,  "targets": [ 4 ] }
-        ]
-    } );
-} );
-</script>
-
-
-
 {% endblock%}
 
 
@@ -40,7 +17,7 @@ $(document).ready(function() {
         <div class="blogsHero" style="background-image:url({% static "images/blog-bg.jpg" %});">
            <div class="small-12 columns tableCell">
               <div class="text-center labHeroText cell">
-                <h1>Welcome {{username}}!</h1>
+                <h1>Welcome {{user.username}}!</h1>
                 <h3></h3>
               </div>
             </div>
@@ -57,37 +34,37 @@ $(document).ready(function() {
 <div>
         <div class="small-12 columns">
              <div class="small-12 medium-4 columns blog_inspire">
-               <a href="timeline/">
-                 <div class="blog_mainImage" style="background-image:url({% static "images/textures/1.jpg"%});"><h2>TimeLine History</h2></div>
+               <a href="/virtual/console/log/">
+                 <div class="blog_mainImage" style="background-image:url({% static "images/textures/1.jpg"%});"><h2>Add new Log</h2></div>
                </a>
                <div class="blogs_description">
                  <h5></h5>
     
-                 <a href="collaboration/" class="blog_viewAll" style="background:#808080;">Collaboration Center</a>
+                 <a href="/virtual/console/log/" class="blog_viewAll" style="background:#808080;">Logging Center</a>
                </div>
              </div>
             
              <div class="small-12 medium-4 columns blog_inspire">
-               <a href="{{username}}/">
+               <a href="/virtual/console/#experiments">
                  <div class="blog_mainImage" style="background-image:url({% static "images/textures/2.jpg"%});"><h2>My Experiments</h2></div>
                </a>
                <div class="blogs_description">
                  <h5></h5>
 
-                 <a href="{{username}}/" class="blog_viewAll" style="background:#808080;">Experiment Management Center</a>
+                 <a href="/virtual/console/myexperiments/" class="blog_viewAll" style="background:#808080;">Experiment Management Center</a>
                </div>
              </div>
              
 
              <div class="small-12 medium-4 columns blog_inspire">
 
-               <a href="data/">
-                 <div class="blog_mainImage" style="background-image:url({% static "images/textures/3.jpg"%});"><h2>Data Import Export</h2></div>
+               <a href="/virtual/console/account/#setting">
+                 <div class="blog_mainImage" style="background-image:url({% static "images/textures/3.jpg"%});"><h2>Account Settings</h2></div>
                </a>
                <div class="blogs_description">
                  <h5></h5>
 
-                 <a href="communication/" class="blog_viewAll" style="background:#808080;">Communication Center</a>
+                 <a href="/virtual/console/account/" class="blog_viewAll" style="background:#808080;">Account Center</a>
                </div>
              </div>
            
@@ -96,118 +73,18 @@ $(document).ready(function() {
 </div>
 
 
-
-
-
-<div  style="width: 100%;margin-left:auto;margin-right:auto;">
-
-<div class="jumbotron">
+<div  style="width: 100%;margin-left:auto;margin-right:auto;text-align:center;">
+<hr>
+<div class="jumbotron" id='experiments'>
   <h2 align='middle'>My Experiments:</h2>
 <hr>
 
-<table id="recent" class="display" style="width: 90%;margin-left:auto;margin-right:auto;">
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Date</th>
-                <th>Investigators</th>
-                <th>Created By</th>
-                <th>Link</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-
-        <tfoot>
-            <tr>
-                <th>Title</th>
-                <th>Date</th>
-                <th>Investigators</th>
-                <th>Created By</th>
-                <th>Link</th>
-                <th>Action</th>
-            </tr>
-        </tfoot>
-
-        <tbody>
-                {% for experiment in experiments %}
-                        <tr>
-                                <td>{{experiment.title}}</td>
-                                <td>{{ experiment.experiment_date }}</td>
-                                <td>{{experiment.investigator_set.all}}</td>
-                                <td>{{experiment.created_by.FirstName}}</td>
-                                <td><a href="{{experiment.get_absolute_url}}">Link</a></td>
-                                <td><a href="{{experiment.get_absolute_url}}">Add sample</a></td>
-                        </tr>
-
-                {% endfor %}
-        </tbody>
-</table>
+{%include "exp_table.html"%}
 
 </div>
-
 <hr>
 
 
-<!--
-
-
-<div style="width: 90%;margin-left:auto;margin-right:auto;">
-
-<div class="panel panel-primary">
-  <div class="panel-heading">
-    <h2 style="float:left;margin-top: 2px;margin-bottom: 0px;margin-right: 20px;">Experiment  </h2>
-    <div class="btn-group" >
-        <a href="#" class="btn btn-default">Actions</a>
-        <a href="#" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></a>
-        <ul class="dropdown-menu">
-        <li><a href="#">Edit</a></li>
-        <li><a href="#">Add Sample</a></li>
-        <li><a href="#">Delete</a></li>
-        <li class="divider"></li>
-    <li><a href="#">Separated link</a></li>
-  </ul>
-</div>
-    <a href='/virtual/get/{{experiment.experiment_id}}/'>Sharable Link</a>
-  </div>
-  <div class="panel-body">
-        <div class="well" style="margin-bottom: 2px;"><strong>Experiment Title: </strong> {{experiment.title}}</div>
-        <div class="well" style="margin-bottom: 2px;"><strong>Experiment Date: </strong>{{ experiment.experiment_date }}</div>
-        <div class="well" style="margin-bottom: 2px;"><strong>Investigator(s): </strong>{{experiment.investigator}}</div>
-  </div>
-</div>
-
-{% if experiment.sample_set.all%}
-{% for sample in experiment.sample_set.all %}
-<div class="panel panel-info" style="width:100%;float:right;">
-  <div class="panel-heading">
-    <h3>Samples #{{ forloop.counter }} | Replicate: {{sample.replicate}}</h3>
-  </div>
-  <div class="panel-body">
-        <div class="well well-sm" style="margin-bottom: 2px;"><strong>Same Name: </strong>{{sample.sample_name}}</div>
-        <div class="well well-sm" style="margin-bottom: 2px;"><strong>Index: </strong>{{ sample.index }}</div>
-        <div class="well well-sm" style="margin-bottom: 2px;"><strong>Creator: </strong>{{sample.created_by}}</div>
-        <div class="well well-sm" style="margin-bottom: 2px;"><strong>Sample Creation Date: </strong>{{sample.created_date}}</div>
-  </div>
-</div>
-{% endfor %}
-
-{% else %}
- <div class="panel panel-info" style="width:100%;float:right;">
-  <div class="panel-heading">
-    <h3>Sample</h3>
-  </div>
-  <div class="panel-body">
-        <div class="well well-sm" style="margin-bottom: 2px;"><strong>No Sample added for this experiment</div>
-  </div>
-</div>
-
-
-{% endif %}
-<a href="#" class="btn btn-primary" style="float:right">Edit Sample</a>
-</div>
-<hr>
-
---!>
 
 {% endblock %}
 

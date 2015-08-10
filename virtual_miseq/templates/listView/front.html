@@ -11,27 +11,6 @@
 <script src="{% static "js/jquery.dataTables.js" %}"></script>
 <link rel="stylesheet" href="{% static "css/jquery.dataTables.css" %}" />
 
-<script>
-$(document).ready(function() {
-    $('#recent').dataTable( {
-	"order": [[ 2, "desc" ]],
-	"pageLength": 30,
-        "columnDefs": [
-            {
-                // The `data` parameter refers to the data for the cell (defined by the
-                // `data` option, which defaults to the column being worked with, in
-                // this case `data: 0`.
-                "render": function ( data, type, row ) {
-                    return data;
-                },
-                "targets": 0
-            },
-            //{ "visible": false,  "targets": [ 4 ] }
-        ]
-    } );
-} );
-</script>
-
 <script type="text/javascript">
     $(document).ready(function(){
     //Check if the current URL contains '#'
@@ -85,45 +64,12 @@ $(document).ready(function() {
   </div>
 
 
-
 <div class="page-wrapper">
 
 <div class="jumbotron" style="margin-bottom: 0px;position:relative;text-align:center;">
   <h2 style="align:'middle';position:relative;">Latest Experiments</h2>
 
-
-<table id="recent" class="display" cellspacing="0" width="90%">
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Project</th>
-		<th>Date</th>
-		<th>Sample Count</th>
-                <th>Investigators</th>
-                <th>Created By</th>
-		<th>Actions</th>
-	    </tr>
-        </thead>
-
-        <tbody>
-		{% for experiment in experiments %}
-			<tr>
-				<td><a href="{{experiment.get_absolute_url}}">{{experiment.title}}</a></td>
-                                <td>{% autoescape off %}{{experiment.get_taged_project_name}} {% endautoescape %}</td>
-				<td>{{ experiment.get_standard_created_date }}</td>
-                                <td>{{ experiment.sample_set.count }}</td>
-				<td>{% autoescape off %}{{experiment.get_taged_investigator_name}} {% endautoescape %}</td>
-                                <td>{{experiment.created_by.FirstName}}</td>
-                                <td>
-				<a href="/virtual/edit/{{experiment.experiment_id}}/" type="submit" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;">Edit Experiment</a>
-				<a href="/virtual/get/{{experiment.experiment_id}}/#sample" type="submit" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;">Edit sample</a>		
-				<a href="/virtual/export/{{experiment.experiment_id}}" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;">Generate SampleSheet</a>
-				</td>
-			</tr>
-
-		{% endfor %}
-        </tbody>
-</table>
+	{% include "exp_table.html"%}
 
  <p style="text-align: center;"><a href='/virtual/search/' class="btn btn-primary btn-lg">Advance Search</a></p>
 </div>

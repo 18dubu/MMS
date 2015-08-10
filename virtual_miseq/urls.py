@@ -21,7 +21,8 @@ urlpatterns = [
 	
 	url(r'^(?P<mode>new)/$', views.new_exp2,{}, name='new'),
 	url(r'^(?P<mode>edit)/(?P<experiment_id>[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12})/$', views.new_exp2,{}, name='edit2'),
-	 url(r'^delete/(?P<experiment_id>[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12})/$', views.new_exp2,{}, name='delete2'),
+	url(r'^delete/(?P<experiment_id>[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12})/$', views.new_exp2,{}, name='delete2'),
+
 	url(r'^new/example', views.new_exp_example, name='new_example'),
 	
 	url(r'^get/(?P<experiment_id>[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12})/(?P<mode>\w+)/$', views.add_edit_sample,{}, name='addsample'),
@@ -29,9 +30,14 @@ urlpatterns = [
 
 	url(r'^get/(?P<experiment_id>[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12})/$',views.detail, name='detail'),
 
+	url(r'^get/(?P<experiment_id>[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12})/log/(?P<mode>\w+)/$',views.new_edit_log, name='new_log'),
+
 	#####################Import and Export###########################
-	url(r'^export/(?P<experiment_id>[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12})/$', views.export_samplesheet_csv,{}, name='export'),
+	url(r'^export/(?P<experiment_id>[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12})/samplesheet/$', views.export_samplesheet_csv,{}, name='export'),
+	url(r'^export/(?P<experiment_id>[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12})/log/$', views.export_log,{}, name='export'),
 	url(r'^import/(?P<experiment_id>[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12})/$', views.import_samplesheet_csv,{}, name='import'),
+	
+	
 	#url(r'^export/(?P<original_filename>.+)$', views.respond_as_attachment,{}, name='export_db'),
 
 	#####################Info and confirm ###########################
@@ -45,10 +51,9 @@ urlpatterns = [
 
 	#########################USER CONSOLE############################
 	url(r'^console/$', views.console, name='console'),
-	url(r'^console/timeline/$', views.timeline, name='timeline'),
-
-
-
+	url(r'^console/log/$', views.log, name='log'),
+	url(r'^console/myexperiments/$', views.myexperiments, name='myexperiments'),
+	url(r'^console/account/$', views.account, name='account'),
 
 	url(r'/physical/', views.physical_search, name='physical_search'),
 

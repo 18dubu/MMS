@@ -1,7 +1,7 @@
 from ajax_select import LookupChannel
 from django.utils.html import escape
 from django.db.models import Q
-from virtual_miseq.models import Experiment, Sample, IDMSUser, MiseqIndex, CcleLibrary, ShrnaLibrary
+from virtual_miseq.models import Experiment, Sample, Log, IDMSUser, MiseqIndex, CcleLibrary, ShrnaLibrary
 
 from selectable.base import ModelLookup
 from selectable.registry import registry

@@ -45,7 +45,7 @@
 <h1>Create New MiSeq Experiment<span>powered by Pfizer MMS</span></h1>
 <form>
     <div class="section"><span>1</span>META Data</div>
-    
+    {{ expform.non_field_errors }}  
     <div class="inner-wrap">
 	<p>
 	{{ expform.project_name.label_tag}}

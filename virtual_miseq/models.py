@@ -338,6 +338,16 @@ class Experiment(models.Model):
 		
 		return ', '.join(tags)
 	
+	@property
+        def get_taged_created_by_name(self):
+                if self.created_by:
+			tags="<span class=\'label label-info\' style=\'font-size:85%%;font-weight:500;background-color:#66C285;\'><a href=\'%s\'><font color='white'>%s</font></a></span>" % ('/virtual/search/?u='+'%20'.join([self.created_by.FirstName, self.created_by.LastName]), ' '.join([self.created_by.FirstName, self.created_by.LastName]))
+
+                	return tags
+		else:
+			return ''
+
+
 	@property	
 	def get_absolute_url(self):
 		return "/virtual/get/%s/" % self.experiment_id
@@ -436,6 +446,32 @@ class Sample(models.Model):
 		return self.sample_name
 '''
 		
+class Log(models.Model):
+    writer = models.ManyToManyField(IDMSUser,related_name='writer',blank=True)
+    subject = models.CharField(max_length=500)
+    content = models.TextField()
+    related_exp = models.ForeignKey(Experiment,blank=True,null=True,related_name='log_related_exp')
+    related_sam = models.ForeignKey(Sample,blank=True,null=True,related_name='log_related_sam')
+    visible_to =  models.CharField(blank=True,max_length=20,
+                        choices = (
+                        ("Everyone", "Everyone"),
+                        ("Me", "Me"),
+                        ("Collaborators","Collaborators")
+                ),
+                default="Collaborators",
+        )
+
+    created_by = models.ForeignKey(IDMSUser,blank=True,null=True,related_name='log_created_by')
+    created_date = models.DateTimeField("Created Date",default=datetime.datetime.now,blank=True)
+    updated_by = models.ManyToManyField(IDMSUser,blank=True,related_name='log_updated_by')
+    updated_date = models.DateTimeField("Updated date",auto_now_add=False, auto_now=True,blank=True,null=True)
+    download_by = models.ManyToManyField(IDMSUser,blank=True,related_name='log_download_by')
+    download_date = models.DateTimeField("Download Date",null=True,blank=True)
+
+    def __unicode__(self):
+            return unicode(self.subject)
+
+
 
 
 #############################Legacy Models############################

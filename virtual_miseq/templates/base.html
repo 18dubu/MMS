@@ -73,9 +73,8 @@ function popupwindow(url, title, w, h) {
           <li><a href="/virtual/search/">Planned MiSeq</a></li>
           <li><a href="/physical/search/">Finished MiSeq</a></li>
           <li><a href="/admin/">Admin</a></li>
-	  <li><a href="/virtual/console/">Console</a></li>
-          {% if user %}
-            <li><div class="inputs"><a href='/userConsole'>{{user.name}}</a></div></li>
+          {% if user.is_active and user.is_authenticated %}
+            <li><div class="inputs"><a href="/virtual/console/">{{user}}</a></div></li>
             <li>
               <form id="signup" method="post">
               <div class="inputs">

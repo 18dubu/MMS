@@ -5,7 +5,7 @@ from django.core.context_processors import csrf
 from django.core.urlresolvers import reverse
 from django.shortcuts import render, render_to_response, get_object_or_404
 from django.contrib.auth.models import User
-
+from django.contrib.auth.forms import UserCreationForm
 from forms import LoginForm
 from virtual_miseq.models import IDMSUser
 
@@ -16,12 +16,6 @@ import logging
 logr = logging.getLogger(__name__)
 
 
-'''
-def login(request):
-    c = {}
-    c.update(csrf(request))    
-    return render_to_response('login.html', c)
-''' 
 #auth_view
 def login(request):
     
@@ -49,30 +43,63 @@ def login(request):
 		l.protocol_version = 3
 		l.set_option(ldap.OPT_REFERRALS, 0)
 		try:
-			l.bind(un, passwd) # l.simple_bind_s(un, passwd)
+			l.simple_bind_s(un, passwd)
 		except ldap.INVALID_CREDENTIALS:
 			has_error = True
 			args['validate_error'] = 'Error validating NTID and password'		
 		if has_error:
 			return render(request,'login.html',args)	
 		else:
-			#Check IDMS TABLE HAS THE CURRENT USER
-			IDMS_user = IDMSUser.objects.get(NTID=NTID)
+			'''			
+			baseDN = "OU=User, OU=Accounts, DC=amer.pfizer.com,DC=pfizer,DC=com"
+			searchScope = ldap.SCOPE_SUBTREE
+			retrieveAttributes = None 
 			
-			if IDMS_user:
+			searchFilter = "(&(objectCategory=person)(objectClass=user)(sAMAccountName="+un+"))"#"cn=*"
+
+			users = {}
+
+			try:
+				ldap_result_id = l.search(baseDN, searchScope, searchFilter)
+				while 1:
+				    rType, rData = l.result(ldap_result_id, 0)
+				    if (rData == []):
+					break
+				    else:
+					if rType == ldap.RES_SEARCH_ENTRY:
+					    cn = rData[0][0]
+					    data = rData[0][1]
+
+					    #Flatten, just for more easy access
+					    for (k, v) in data.items():
+						if len(v) == 1:
+						    data[k] = v[0]
+
+					    uid = data["uid"]
+					    users[cn] = data
+				
+			except ldap.LDAPError, e:
+        			print e
+    			finally:
+        			l.unbind_s()
+			'''
+			#Check IDMS TABLE HAS THE CURRENT USER
+			try:
+				IDMS_user = IDMSUser.objects.get(NTID__iexact=NTID)
 				email = IDMS_user.EmailAddress
-			else:
+			except IDMSUser.DoesNotExist:
 				#add this user if not in IDMS TABLE, MAKE status to pending
-				new = IDMSUser(NTID=NTID,approvalStatus=False)
+				new_IDMS = IDMSUser(NTID=NTID,approvalStatus=False,FirstName=NTID,LastName=NTID,EmailAddress=NTID+"@PFIZER.COM")
+				new_IDMS.save()
 				email = ''
 			#authenticate user
 			user = auth.authenticate(username=NTID, password=NTID)
-			if user is not None:
+			if user is not None and user.is_active:
 				auth.login(request, user)
 			else:
 				user = User.objects.create_user(NTID, email, NTID)
 				user.save()
-			return HttpResponse('<script type="text/javascript">window.close();window.opener.location.href="/virtual/console/";</script>')
+			return HttpResponse('<script type="text/javascript">if (window.opener){window.close();window.opener.location.href="/virtual/console/";}else{window.location.href="/virtual/console/";}</script>')
 	
     else:
     	return render(request,'login.html')
@@ -90,12 +117,13 @@ def loggedin(request):
     return render_to_response('loggedin.html', 
                               {'full_name': request.user.username})
 
-def invalid_login(request):
-    return render_to_response('invalid_login.html')
-
 def logout(request):
     auth.logout(request)
+    return HttpResponseRedirect("/accounts/logout_success/")
+
+def logout_success(request):
     return render_to_response('logout.html')
+
 
 def register_user(request):
     if request.method == 'POST':
@@ -117,4 +145,8 @@ def register_user(request):
 
 def register_success(request):
     return render_to_response('register_success.html')
+
+def help(request):
+
+    return render_to_response('help.html')
 

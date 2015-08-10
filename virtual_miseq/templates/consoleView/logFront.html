@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+
+{% extends "base.html" %}
+
+{% load staticfiles %}
+{%block script%}
+        <link rel="stylesheet" href="{% static "timeline/css/timeline-reset.css"%}"/> <!-- CSS reset -->
+        <link rel="stylesheet" href="{% static "timeline/css/timeline-style.css"%}"/> <!-- Resource style -->
+
+	<link rel="stylesheet" href="{% static "css/clean-blog.min.css" %}"/>
+
+        <script src="{% static "timeline/js/timeline-modernizr.js" %}"></script> <!-- Modernizr -->
+        <script src="{% static "timeline/js/timeline-main.js" %}"></script> <!-- Resource jQuery -->
+
+{%endblock%}
+
+{% block content %}
+
+<body>
+<ul class="breadcrumb">
+  <li><a href="/">Home</a></li>
+  <li><a href="/virtual/">Planned MiSeq</a></li>
+  <li><a href="/virtual/console/">User Console</a></li>
+  <li class="active">Logging Center</li>
+</ul>
+
+<div style="width:95%; ">
+    <!-- Main Content -->
+    <div class="box-container" style='width:50%;position:relative;margin-right: 20px;margin-left: 20px;'>
+           
+	        <header style=" margin-top: 0px; margin-bottom: 50px; padding-bottom: 0px; height: 100px; padding-top: 0px; ">
+                <div style="text-align: center;">
+                <h1 style="text-align: center; vertical-align: middle;display: inline-block;"> {{user.username}}'s Research Log</h1>
+                </div>
+                </header>
+
+
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+                {% for p in posts %}
+                <div class="post-preview">
+                    <a href="/blog/user{{username}}/{{p.pk}}">
+                        <h2 class="post-title">
+                            {{p.subject}}
+                        </h2>
+                    </a>
+                    <h4 class="post-subtitle">
+                        {{p.content}}
+                        <!--
+                        p.content[:300]|safe...
+                        --!>
+                        </h4>
+                    <p class="post-meta">Posted by {% autoescape off %}{{p.created_by.get_taged_investigator_name}}{% endautoescape %} on {{p.created_date}}</p>
+
+                {%if p.updated_by.NTID != None %}
+                <p>Last Modified by {% autoescape off %}{{p.updated_by.get_taged_investigator_name}}{% endautoescape %} on {{p.updated_date}}</p>
+                {%endif%}
+
+
+                </div>
+                <hr>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+
+
+
+   <div class="box-container" style='width:45%'>
+        <div class="content">
+                <header style=" margin-top: 0px; margin-bottom: 50px; padding-bottom: 0px; height: 100px; padding-top: 0px; ">
+                <div style="text-align: center;">
+                <h1 style="text-align: center; vertical-align: middle;display: inline-block;"> {{user.username}}'s Timeline</h1>
+                </div>
+                </header>
+        <section id="cd-timeline" class="cd-container">
+                {% for experiment in experiments %}
+                <div class="cd-timeline-block">
+                        <div class="cd-timeline-img cd-movie">
+                        </div> <!-- cd-timeline-img -->
+                        <div class="cd-timeline-content">
+                                <p>Project: {{experiment.project_name}}</p>
+                                <h2>Experiment: {{experiment.title}}</h2>
+                                <a href="{{experiment.get_absolute_url}}" class="cd-read-more">Details</a>
+                                <span class="cd-date">{{experiment.get_standard_created_date}}</span>
+                        </div> <!-- cd-timeline-content -->
+                </div> <!-- cd-timeline-block -->
+                {% endfor %}
+        </section> <!-- cd-timeline -->
+        </div>
+     </div>
+</div>
+    <hr>
+
+</body>
+
+</html>
+{% endblock %}
+

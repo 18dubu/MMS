@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{%block script %}
+    <title>MMS | New Log for Experiment: {{experiment.title}}</title>
+
+
+    <link href="{% static "css/dj.selectable.css" %}" type="text/css" media="all" rel="stylesheet">
+
+    <script src="{% static "js/jquery.formset.js" %}"></script>
+
+    
+    <script type="text/javascript">
+    //datapicker
+    $(function() {
+    $( ".datepicker" ).datepicker({
+      changeMonth: true,
+      changeYear: true,
+      yearRange: "2000:2050",
+      // You can put more options here.
+
+      });
+    });
+    </script>
+
+    <link rel="stylesheet" href="{% static "css/new-form.css" %}" />
+
+
+{% endblock %}
+{% block content %}
+<body>
+<ul class="breadcrumb">
+  <li><a href="/">Home</a></li>
+  <li><a href="/virtual">Virtual MiSeq</a></li>
+  <li class="active">New Log</li>
+</ul>
+
+    <div>
+<form action="." method="post">
+{% csrf_token %}
+	    
+
+<div class="form-style-10" style='width:50%'>
+<h1>Create New MiSeq Log<span>powered by Pfizer MMS</span></h1>
+    <div class="section"><span>1</span>Log Content</div>
+    {{ logform.non_field_errors }}  
+    <div class="inner-wrap">
+        <p>
+	{{logform.subject.label_tag}}
+	{{logform.subject.errors}}
+	{{logform.subject}}
+	</p>
+        <p>
+	{{logform.writer.label_tag}}
+	{{logform.writer.errors}}
+	{{logform.writer}}
+	</p>
+        <p>
+	{{logform.content.label_tag}}
+	{{logform.content.errors}}
+	{{logform.content}}
+    	</p>
+    </div>
+    <hr>
+    <label>Settings</label>
+    <div class="inner-wrap-2">
+	<p>
+	{{logform.visible_to.label_tag}}
+	{{logform.visible_to.errors}}
+	{{logform.visible_to}}
+    	</p>
+	{{ logform.management_form }}
+    </div>
+
+      <div class="button-section" align="center">
+	<hr>
+	{%if mode == "edit" %}
+	<input type='submit' name='delete_log'class="submit" value="Delete Experiment" style="position:relative;margin-right: 50px;" onclick="return confirm('Are you sure you want to DELETE this log?');"/>
+	{%elif  mode == "new"%}
+	<input type='submit' name='cancel_log'class="submit" value="Cancel" style="position:relative;margin-right: 50px;"/>
+	{%endif%}
+	<input type="submit" name='create_log' value="Save Experiment" class="submit" />
+      </div>
+    </form>
+  </div>
+</form>
+</div>
+
+
+
+</body>
+<script type="text/javascript" src="{% static "js/jquery.dj.selectable.js" %}"></script>
+
+{% endblock %}
+</html>
+
+

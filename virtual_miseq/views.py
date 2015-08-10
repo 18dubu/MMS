@@ -1,22 +1,24 @@
 # -*- coding: utf-8 -*-
-from .models import Experiment, Sample, IDMSUser,MiseqIndex,PoolNumberChoice,Treatment,CcleLibrary,ShrnaLibrary
+from .models import Experiment, Sample, Log, IDMSUser,MiseqIndex,PoolNumberChoice,Treatment,CcleLibrary,ShrnaLibrary
+from forms import ExperimentForm, SampleForm, SampleFormSet, SampleFormSet0, SampleSheetImportForm, LogForm
 
 from django.views.generic import ListView
 from django.shortcuts import render, render_to_response, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext, loader
+from django.template.defaulttags import register
 from django.utils import timezone
 from django.core.context_processors import csrf
-from forms import ExperimentForm, SampleForm, SampleFormSet, SampleFormSet0, SampleSheetImportForm
+from django.core.exceptions import ValidationError
 from django_datatables_view.base_datatable_view import BaseDatatableView
 from django.forms.models import model_to_dict
-from django.core.exceptions import ValidationError
+from django.db.models import Q
+from django.contrib.auth.decorators import login_required
 import json
 import uuid
 import csv
-import itertools
 import time
-
+from datetime import datetime
 
 
 '''
@@ -35,17 +37,41 @@ def Experiment_asJson(request):
 '''
 
 def datatable(request):
+	experiments = Experiment.objects.all()
+        auth_users = {}
+        for e in experiments:
+                curr = []
+                for i in e.investigator.all():
+                        curr.append(i.NTID)
+                auth_users[e.experiment_id] = curr
+
 	args = {}
         args.update(csrf(request))
         args['p'] = request.GET.get('p', '')
 	args['u'] = request.GET.get('u', '')
-	args['experiments'] = Experiment.objects.all()
-        return render_to_response('listView/datatable.html', args)
+	args['experiments'] = experiments
+        args['user'] = request.user
+        args['auth_users'] = auth_users
+
+	return render_to_response('listView/datatable.html', args)
 
 
 def physical_search(request):
         experiments = Experiment.objects.all()
-        return render_to_response('listView/datatable.html', {'experiments':experiments})
+        auth_users = {}
+        for e in experiments:
+                curr = []
+                for i in e.investigator.all():
+                        curr.append(i.NTID)
+                auth_users[e.experiment_id] = curr
+
+        args = {}
+        args.update(csrf(request))
+        args['user'] = request.user
+        args['experiments'] = experiments
+        args['auth_users'] = auth_users
+
+        return render_to_response('listView/datatable.html', args)
 
 
 '''
@@ -103,13 +129,26 @@ class OrderListJson(BaseDatatableView):
 
 def index(request):
 	#experiments = Experiment.objects.all()
-	experiments = Experiment.objects.order_by('-created_date')[:1000]
-	return render_to_response('listView/front.html', {'experiments':experiments})
+	experiments = Experiment.objects.order_by('-created_date')
+
+        auth_users = {}
+        for e in experiments:
+                curr = []
+                for i in e.investigator.all():
+                        curr.append(i.NTID)
+                auth_users[e.experiment_id] = curr
+
+        args = {}
+        args.update(csrf(request))
+        args['user'] = request.user
+        args['experiments'] = experiments
+	args['auth_users'] = auth_users
+	return render_to_response('listView/front.html',args)
 	
 
 def detail(request, experiment_id):
 	experiment = get_object_or_404(Experiment, experiment_id=experiment_id)
-
+	posts = Log.objects.filter(related_exp=experiment)
 	if 'delete_sam' in request.POST:
 		sam2delete = Sample.objects.get(id=request.POST.get('delete_sam'))
 		experiment.sample_set.remove(sam2delete)
@@ -117,7 +156,21 @@ def detail(request, experiment_id):
 #return HttpResponseRedirect('/virtual/delete/%s/' % experiment.experiment_id)
 #		return HttpResponse('<script type="text/javascript">location.reload(true);</script>') 
 
-	return render(request, 'detailView/detail.html', {'experiment': experiment})
+
+        auth_users = {}
+        curr = []
+        for i in experiment.investigator.all():
+                curr.append(i.NTID)
+        auth_users[experiment.experiment_id] = curr
+
+	
+	args = {}
+        args.update(csrf(request))
+        args['user'] = request.user
+        args['experiment'] = experiment
+	args['auth_users'] = auth_users
+	args['posts'] = posts
+	return render(request, 'detailView/detail.html', args)
 
 
 def new_exp(request, experiment_id=None):
@@ -153,8 +206,6 @@ def new_exp(request, experiment_id=None):
                         sample_name = sample_name + '.' + sample.other_tag
                 return sample_name
 
-	iterator=itertools.count(1)
-	
 	if experiment_id:
 		experiment = get_object_or_404(Experiment, experiment_id=experiment_id)
 		expform = ExperimentForm(instance=experiment)
@@ -200,10 +251,10 @@ def new_exp(request, experiment_id=None):
 	args.update(csrf(request))
 	args['expform'] = expform
 	args['samforms'] = samforms
-	args['iterator'] = iterator
+	args['user'] = request.user
 	return render_to_response('newExpView/new.html',args)
 
-
+@login_required
 def new_exp2(request, mode, experiment_id=None):
 
 	if experiment_id:
@@ -223,12 +274,13 @@ def new_exp2(request, mode, experiment_id=None):
 
                    	        #automatic generate or modify fields
                                 #save modified form
-
+				new_exp.created_by = IDMSUser.objects.get(NTID__iexact=request.user.username)
                       		new_exp.save()
                                	expform.save_m2m()
                                 #sample forms
 
                                	return HttpResponseRedirect('/virtual/new/confirm/%s/' % new_exp.experiment_id)
+			
 		elif 'delete_exp' in request.POST:
 			if experiment_id is not None:
                         	exp2delete = get_object_or_404(Experiment, experiment_id=experiment.experiment_id).delete()
@@ -238,12 +290,14 @@ def new_exp2(request, mode, experiment_id=None):
         	elif 'cancel_exp' in request.POST:
 			return HttpResponseRedirect('/')
 
-        expform = ExperimentForm(instance=experiment)
+        else:
+		expform = ExperimentForm(instance=experiment)
 		
         args = {}
         args.update(csrf(request))
         args['expform'] = expform
 	args['mode'] = mode
+	args['user'] = request.user
         return render_to_response('newExpView/new2.html',args)
 
 
@@ -295,12 +349,13 @@ def add_edit_sample(request,experiment_id, mode,sample_id=None):
 			if 1:#samforms.has_changed():
 				for samform in samforms:
 					if  mode == 'editsample':
-						if samform.is_valid() and samform is not None:
-							new_sam = samform.save(commit=False)
-							new_sam.save()
-							samform.save_m2m()		
-							new_sam.sample_name = generate_sample_name(new_sam)
-                    		        		new_sam.save()
+						if samform.has_changed() and samform is not None:
+							if samform.is_valid():
+								new_sam = samform.save(commit=False)
+								new_sam.save()
+								samform.save_m2m()		
+								new_sam.sample_name = generate_sample_name(new_sam)
+								new_sam.save()
 					if mode == 'addsample':
 						if samform.is_valid() and samform.has_changed() and samform is not None:
                                                         new_sam = samform.save(commit=False)
@@ -348,6 +403,7 @@ def add_edit_sample(request,experiment_id, mode,sample_id=None):
 	args['sample_id'] = sample_id
 	args['title'] = title
         args['samforms'] = samforms
+	args['user'] = request.user
 	return render_to_response('newExpView/sample.html',args)
 
 
@@ -368,6 +424,7 @@ def confirm(request,mode,experiment_id):
 	args['experiment_id'] = experiment_id
 	args['title'] = title
 	args['mode'] = mode
+	args['user'] = request.user
 	return render_to_response('newExpView/confirm.html',args)
 		
 
@@ -415,6 +472,33 @@ def import_samplesheet_csv(request,experiment_id):
         	form = SampleSheetImportForm()
     	return render_to_response('detailView/upload.html', {'form': form})
 
+
+def export_log(request,experiment_id):
+        curr_exp = get_object_or_404(Experiment, experiment_id=experiment_id)
+	#IDMSUser.objects.get(NTID__iexact=request.user.username)
+	#curr_exp.download_date = datetime.now()
+	#curr_exp.save()
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="ExpermentLog_%s.csv"' % experiment_id
+        writer = csv.writer(response)
+	writer.writerow(['Log_ID','subject','content','writer','visible_to','created_date','created_by','updated_date','updated_by','download_date','download_by'])
+        log_id = 0
+	posts = Log.objects.filter(related_exp=curr_exp)
+        if posts:
+		for log in posts:
+			log_id += 1
+			log.download_date = datetime.now()
+			log.download_by = IDMSUser.objects.filter(NTID__iexact=request.user.username)
+			log.save()
+			writers=[]
+			for w in log.writer.all():
+				writers.append(w.NTID)
+			writer.writerow(['L'+str(log_id),log.subject,log.content,'/'.join(writers),log.visible_to,log.created_date,'',log.updated_date,'',datetime.now(),request.user.username])#TODO
+
+        return response
+
+
+
 #https://djangosnippets.org/snippets/1710/
 def respond_as_attachment(request, original_filename, media_path='media/'):
     from urlparse import urlparse
@@ -451,18 +535,107 @@ def respond_as_attachment(request, original_filename, media_path='media/'):
 def signup(request):
 	return render_to_response('signView/signup.html')
 
+@login_required
 def console(request):
-        return render_to_response('consoleView/userConsole.html')
+	
+	experiments = Experiment.objects.filter(Q(investigator__NTID__iexact=request.user.username) | Q(created_by__NTID__iexact=request.user.username)).order_by('-created_date')
+	
+	auth_users = {}
+	for e in experiments:
+		curr = []
+		for i in e.investigator.all():
+			curr.append(i.NTID)
+		auth_users[e.experiment_id] = curr
 
-def timeline(request,user='jiyang.yu2@pfizer.com'):
-        experiments = Experiment.objects.filter(investigator__EmailAddress=user).order_by('-created_date')
-	user = IDMSUser.objects.get(EmailAddress=user)
+	args = {}
+        args.update(csrf(request))
+        args['user'] = request.user
+	args['experiments'] = experiments
+	args['auth_users'] = auth_users
+        return render_to_response('consoleView/userConsole.html',args)
+
+@login_required
+def myexperiments(request):
+        experiments = Experiment.objects.filter(investigator__NTID__iexact=request.user.username).order_by('-created_date')
 	args = {}
         args.update(csrf(request))
         args['experiments'] = experiments
-	args['user'] = user
-	return render_to_response('consoleView/timeline.html',args)
+	args['user'] = request.user
+	return render_to_response('consoleView/myexperiments.html',args)
 	
+
+@login_required
+def log(request):
+        experiments = Experiment.objects.filter(investigator__NTID__iexact=request.user.username).order_by('-created_date')
+        posts = Log.objects.filter(created_by__NTID__iexact=request.user.username).order_by('-created_date')
+	args = {}
+        args.update(csrf(request))
+        args['experiments'] = experiments
+        args['user'] = request.user
+	args['posts'] = posts
+        return render_to_response('consoleView/logFront.html',args)
+
+
+@login_required
+def new_edit_log(request, mode, experiment_id=None):
+
+        if experiment_id:
+                experiment = get_object_or_404(Experiment, experiment_id=experiment_id)
+                log = Log(related_exp=experiment)
+                #if experiment.user != request.user:
+#               return HttpResponseForbidden()
+        else:
+                log = Log()
+
+        if request.POST:
+                if 'create_log' in request.POST:
+                        logform = LogForm(request.POST, instance=log)
+
+                        if logform.is_valid():
+                                new_log = logform.save(commit=False)
+
+                                #automatic generate or modify fields
+                                #save modified form
+                                new_log.created_by = IDMSUser.objects.get(NTID__iexact=request.user.username)
+				new_log.save()
+                                logform.save_m2m()
+                                #sample forms
+
+                                return HttpResponseRedirect('/virtual/new/confirm/%s/' % experiment.experiment_id)
+
+                elif 'delete_log' in request.POST:
+                        if experiment_id is not None:
+				if experiment_id:
+                                	log2delete = get_object_or_404(Log, related_exp=experiment).delete()
+                                	return HttpResponseRedirect('/virtual/delete/confirm/%s/' % experiment.experiment_id)
+                        else:
+                                return HttpResponseRedirect('/')
+                elif 'cancel_log' in request.POST:
+                        return HttpResponseRedirect('/')
+
+        else:
+                logform = LogForm(instance=log)
+
+        args = {}
+        args.update(csrf(request))
+        args['logform'] = logform
+        args['mode'] = mode
+        args['user'] = request.user
+        return render_to_response('consoleView/logNew.html',args)
+
+
+
+
+@login_required
+def account(request):
+        experiments = Experiment.objects.filter(investigator__NTID__iexact=request.user.username).order_by('-created_date')
+        args = {}
+        args.update(csrf(request))
+        args['experiments'] = experiments
+        args['user'] = request.user
+        return render_to_response('consoleView/account.html',args)
+
+
 
 
 
@@ -483,5 +656,21 @@ class TreatmentList(ListView):
         model = Treatment
 
 
+
+######################registered template filters##########################
+@register.filter
+def get_item(dictionary, key):
+    return dictionary.get(key)
+
+@register.filter
+def key(d, key_name):
+    try:
+        value = d[key_name]
+    except:
+        from django.conf import settings
+
+        value = settings.TEMPLATE_STRING_IF_INVALID
+
+    return value
 
 
