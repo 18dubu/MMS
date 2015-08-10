@@ -246,14 +246,14 @@ SampleFormSet = inlineformset_factory(Experiment, Sample,
                                         #'shRNA_on': 'shRNA ON/OFF',
                                         #},
                                         extra=1,
-                                        can_delete = True,
+                                        can_delete = False,
                                         can_order = False
         )
 
 SampleFormSet0 = inlineformset_factory(Experiment, Sample,
                                         form=SampleForm,
                                         extra=0,
-                                        can_delete = True,
+                                        can_delete = False,
                                         can_order = False
         )
 

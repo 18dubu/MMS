@@ -36,14 +36,21 @@ def Experiment_asJson(request):
     #return render_to_response('listView/ajax_search.html',{'experiments' : j})    
 '''
 
-def datatable(request):
-	experiments = Experiment.objects.all()
-        auth_users = {}
+def get_auth_users(experiments):
+	auth_users = {}
         for e in experiments:
                 curr = []
                 for i in e.investigator.all():
-                        curr.append(i.NTID)
+                        curr.append(i.NTID.upper())
+		#append admin to all experiments
+		curr.append('ADMIN')
+		
                 auth_users[e.experiment_id] = curr
+
+	return auth_users
+
+def datatable(request):
+	experiments = Experiment.objects.all()
 
 	args = {}
         args.update(csrf(request))
@@ -51,25 +58,18 @@ def datatable(request):
 	args['u'] = request.GET.get('u', '')
 	args['experiments'] = experiments
         args['user'] = request.user
-        args['auth_users'] = auth_users
+        args['auth_users'] = get_auth_users(experiments)
 
 	return render_to_response('listView/datatable.html', args)
 
 
 def physical_search(request):
         experiments = Experiment.objects.all()
-        auth_users = {}
-        for e in experiments:
-                curr = []
-                for i in e.investigator.all():
-                        curr.append(i.NTID)
-                auth_users[e.experiment_id] = curr
-
         args = {}
         args.update(csrf(request))
         args['user'] = request.user
         args['experiments'] = experiments
-        args['auth_users'] = auth_users
+        args['auth_users'] = get_auth_users(experiments)
 
         return render_to_response('listView/datatable.html', args)
 
@@ -131,46 +131,32 @@ def index(request):
 	#experiments = Experiment.objects.all()
 	experiments = Experiment.objects.order_by('-created_date')
 
-        auth_users = {}
-        for e in experiments:
-                curr = []
-                for i in e.investigator.all():
-                        curr.append(i.NTID)
-                auth_users[e.experiment_id] = curr
-
         args = {}
         args.update(csrf(request))
         args['user'] = request.user
         args['experiments'] = experiments
-	args['auth_users'] = auth_users
+	args['auth_users'] = get_auth_users(experiments)
 	return render_to_response('listView/front.html',args)
 	
 
 def detail(request, experiment_id):
 	experiment = get_object_or_404(Experiment, experiment_id=experiment_id)
 	posts = Log.objects.filter(related_exp=experiment)
-	if 'delete_sam' in request.POST:
-		sam2delete = Sample.objects.get(id=request.POST.get('delete_sam'))
-		experiment.sample_set.remove(sam2delete)
-		return HttpResponseRedirect('/virtual/get/%s/#sample' % experiment.experiment_id)
-#return HttpResponseRedirect('/virtual/delete/%s/' % experiment.experiment_id)
-#		return HttpResponse('<script type="text/javascript">location.reload(true);</script>') 
 
-
-        auth_users = {}
-        curr = []
-        for i in experiment.investigator.all():
-                curr.append(i.NTID)
-        auth_users[experiment.experiment_id] = curr
-
-	
 	args = {}
         args.update(csrf(request))
         args['user'] = request.user
         args['experiment'] = experiment
-	args['auth_users'] = auth_users
+	args['auth_users'] = get_auth_users([experiment])
 	args['posts'] = posts
-	return render(request, 'detailView/detail.html', args)
+	if request.POST.get('delete_sam'):
+                Sample.objects.filter(pk=request.POST.get('delete_sam')).delete()
+                #experiment.sample_set.remove(sam2delete)
+                #return render_to_response(request, 'detailView/detail.html', args)
+                return HttpResponseRedirect('/virtual/get/%s/#sample' % experiment.experiment_id)
+
+	else:
+		return render(request, 'detailView/detail.html', args)
 
 
 def new_exp(request, experiment_id=None):
@@ -435,7 +421,7 @@ def export_samplesheet_csv(request,experiment_id):
 	writer = csv.writer(response)
     	writer.writerow(['[Header]','','','','','','','',''])
     	writer.writerow(['IEMFileVersion',curr_exp.version,'','','','','','',])
-	writer.writerow(['Investigator Name'])
+	writer.writerow(['Investigator Name',curr_exp.get_comma_separated_investigator_name])
 	writer.writerow(['Experiment Name',curr_exp.title])
 	writer.writerow(['Date',curr_exp.experiment_date.date()])
 	writer.writerow(['Workflow',curr_exp.workflow])
@@ -451,13 +437,20 @@ def export_samplesheet_csv(request,experiment_id):
         writer.writerow(['ReverseComplement',curr_exp.reverse_complement])
         writer.writerow([])
         writer.writerow(['[Data]'])
-        writer.writerow(['Sample_ID','Sample_Name','Sample_Plate','Sample_Well','I7_Index_ID','index','Sample_Project','Description','group'])
+        writer.writerow(['Sample_ID','Sample_Name','Sample_Plate','Sample_Well','I7_Index_ID','index','Sample_Project','Description','group','cell_model','shRNA_library','pool_number','shRNA_on','time_in_days','treatment','treatment_dose (nM)','replicate','other_tag','comment','finish_flag'])
 	sample_id = 0
 	for sample in curr_exp.sample_set.all().order_by('created_date'):
 		group = sample.sample_name.split('.')
 		group.pop()
 		sample_id += 1
-		writer.writerow(['S'+str(sample_id),sample.sample_name,'','',sample.index.I7_Index_ID,sample.index.index,curr_exp.title,curr_exp.description,'.'.join(group)])
+		treatment = ''
+		treatment_dose = ''
+		if sample.treatment is not None:
+			treatment = sample.treatment.compoundName
+		if sample.treatment_dose is not None:
+                        treatment_dose = str(sample.treatment_dose)
+
+		writer.writerow(['S'+str(sample_id),sample.sample_name,'','',sample.index.I7_Index_ID,sample.index.index,curr_exp.title,curr_exp.description,'.'.join(group),sample.cell_model.CCLE_name,sample.shRNA_library.LibName,sample.get_pool_numbers_display,sample.get_shRNA_on_display(),sample.time_in_days,treatment,treatment_dose,sample.replicate,sample.other_tag,sample.comment,sample.finish_flag])
 
     	return response
 
@@ -539,20 +532,15 @@ def signup(request):
 def console(request):
 	
 	experiments = Experiment.objects.filter(Q(investigator__NTID__iexact=request.user.username) | Q(created_by__NTID__iexact=request.user.username)).order_by('-created_date')
-	
-	auth_users = {}
-	for e in experiments:
-		curr = []
-		for i in e.investigator.all():
-			curr.append(i.NTID)
-		auth_users[e.experiment_id] = curr
-
+	idms = IDMSUser.objects.get(NTID__iexact=request.user.username)	
 	args = {}
         args.update(csrf(request))
         args['user'] = request.user
 	args['experiments'] = experiments
-	args['auth_users'] = auth_users
-        return render_to_response('consoleView/userConsole.html',args)
+	args['auth_users'] = get_auth_users(experiments)
+        args['idms'] = idms
+	#return render_to_response('consoleView/table.html',args)
+	return render_to_response('consoleView/account.html',args)
 
 @login_required
 def myexperiments(request):
@@ -633,7 +621,7 @@ def account(request):
         args.update(csrf(request))
         args['experiments'] = experiments
         args['user'] = request.user
-        return render_to_response('consoleView/account.html',args)
+        return render_to_response('consoleView/userConsole.html',args)
 
 
 

@@ -28,7 +28,7 @@ $(document).ready(function() {
     } );
 } );
 </script>
-<table id="recent" class="display" cellspacing="0" width="90%">
+<table  id="recent" class="display" cellspacing="0" width="90%">
         <thead>
             <tr>
                 <th>Title</th>
@@ -54,11 +54,11 @@ $(document).ready(function() {
 				<td>{% autoescape off %}{{experiment.get_taged_investigator_name}} {% endautoescape %}</td>
                                 <td>{% autoescape off %}{{experiment.get_taged_created_by_name}}{% endautoescape %}</td>
                                  <td>
-				{%if experiment.created_by.NTID == user.username or user.username in auth_users|key:experiment.experiment_id %}
+				{%if experiment.created_by.NTID.upper == user.username.upper or user.username.upper in auth_users|key:experiment.experiment_id%}
                                 <a href="/virtual/edit/{{experiment.experiment_id}}/" type="submit" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;">Edit Experiment</a>
                                 <a href="/virtual/get/{{experiment.experiment_id}}/#sample" type="submit" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;">Edit sample</a>
                                 {%endif%}
-				<a href="/virtual/export/{{experiment.experiment_id}}/samplesheet/" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;">Generate SampleSheet</a>
+				<a href="/virtual/export/{{experiment.experiment_id}}/samplesheet/" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;">SampleSheet</a>
                                 </td>
 
                         </tr>

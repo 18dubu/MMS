@@ -145,6 +145,7 @@ $(function () {
     lineColors: ['#a0d0e0', '#3c8dbc'],
     hideHover: 'auto'
   });
+  /*
   var line = new Morris.Line({
     element: 'line-chart',
     resize: true,
@@ -174,7 +175,7 @@ $(function () {
     gridTextFamily: "Open Sans",
     gridTextSize: 10
   });
-
+*/
   //Donut Chart
   var donut = new Morris.Donut({
     element: 'sales-chart',

@@ -337,6 +337,14 @@ class Experiment(models.Model):
 			tags.append("<span class=\'label label-info\' style=\'font-size:85%%;font-weight:500;background-color:#66C285;\'><a href=\'%s\'><font color='white'>%s</font></a></span>" % ('/virtual/search/?u='+'%20'.join([i.FirstName, i.LastName]), ' '.join([i.FirstName, i.LastName])))
 		
 		return ', '.join(tags)
+
+        @property
+        def get_comma_separated_investigator_name(self):
+                tags = []
+                for i in self.investigator.all():
+                        tags.append(' '.join([i.FirstName, i.LastName]))
+
+                return ', '.join(tags)
 	
 	@property
         def get_taged_created_by_name(self):

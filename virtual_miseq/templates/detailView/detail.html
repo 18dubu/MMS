@@ -51,13 +51,13 @@ function popupwindow(url, title, w, h) {
 <div class="panel panel-primary">
   <div class="panel-heading">
     <h2 style="float:left;margin-top: 2px;margin-bottom: 0px;margin-right: 20px;">Experiment  </h2>
-{%if experiment.created_by.NTID == user.username or user.username in auth_users|key:experiment.experiment_id %}
+{%if experiment.created_by.NTID.upper == user.username.upper or user.username.upper in auth_users|key:experiment.experiment_id%}
     <a href="/virtual/edit/{{experiment.experiment_id}}/" class="btn btn-default" style="position:relative;margin-right: 20px;">Edit</a>
     <a href="/virtual/get/{{experiment.experiment_id}}/log/new/" class="btn btn-default" style="position:relative;margin-right: 20px;">Add Log</a>
     <a href="/virtual/import/{{experiment.experiment_id}}" class="btn btn-default" style="position:relative;margin-right: 20px;">Import SampleSheet</a>
 {%endif%}
     <a href="/virtual/export/{{experiment.experiment_id}}/samplesheet/" class="btn btn-default" style="position:relative;margin-right: 20px;">Generate SampleSheet</a>
-    <a href="/virtual/export/{{experiment.experiment_id}}/log/" class="btn btn-default" style="position:relative;margin-right: 20px;">Download Logs</a>
+    <a href="/virtual/export/{{experiment.experiment_id}}/log/" class="btn btn-default" style="position:relative;">Download Logs</a>
   </div> 
  </div>
 
@@ -123,10 +123,13 @@ function popupwindow(url, title, w, h) {
 		<td>
 		{% csrf_token %}
 
-		{%if experiment.created_by.NTID == user.username or user.username in auth_users|key:experiment.experiment_id %}
-			<button type="submit" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;" value="{{sample.id}}" onclick="popupwindow('/virtual/get/{{experiment.experiment_id}}/editsample/{{sample.id}}/','Edit Sample',700,770)">Edit</button>
+		{%if experiment.created_by.NTID.upper == user.username.upper or user.username.upper in auth_users|key:experiment.experiment_id%}	
+		<button type="submit" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;" value="{{sample.id}}" onclick="popupwindow('/virtual/get/{{experiment.experiment_id}}/editsample/{{sample.id}}/','Edit Sample',700,770)">Edit</button>
 			<button type="submit" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;" value="{{sample.id}}" onclick="popupwindow('/virtual/get/{{experiment.experiment_id}}/addsample/{{sample.id}}/','New Sample',700,770)">Copy</button>
-			<button type="submit" class="btn btn-warning btn-xs" style="position:relative;margin-right: 5px;" name='delete_sam' value="{{sample.id}}" onclick="return confirm('Are you sure you want to DELETE this sample?');">Delete</button>
+			
+			<form action="" method="post">{% csrf_token %}
+			<button type="submit" class="btn btn-warning btn-xs" style="position:relative;margin-right: 5px;" name='delete_sam' value="{{sample.id}}" onclick="return confirm('Are you sure you want to DELETE this sample {{sample.id}}?');">Delete</button>
+			</form>
 		{%endif%}
 		</td>
          </tr>
@@ -143,13 +146,13 @@ function popupwindow(url, title, w, h) {
 
 {% endif %}
 <div style="position:relative;text-align:center;width=90%;">
-{%if experiment.created_by.NTID == user.username or user.username in auth_users|key:experiment.experiment_id %}
+{%if experiment.created_by.NTID.upper == user.username.upper or user.username.upper in auth_users|key:experiment.experiment_id%}
 	<input type="submit" class="btn btn-primary" style="position:relative;margin-right: 50px;" value="Add New Sample" onclick="popupwindow('/virtual/get/{{experiment.experiment_id}}/addsample/','Add Sample',700,770)">
 
 	<input type="submit" class="btn btn-primary" style="position:relative;margin-right: 50px;" value="Edit Existing Samples" onclick="popupwindow('/virtual/get/{{experiment.experiment_id}}/editsample/','Edit Samples',950,950)">
 {%endif%}
 
-<a href="/virtual/export/{{experiment.experiment_id}}" class="btn btn-primary" style="position:relative;">Generate SampleSheet</a>
+<a href="/virtual/export/{{experiment.experiment_id}}/samplesheet/" class="btn btn-primary" style="position:relative;">Generate SampleSheet</a>
 </div>
 
 </div>
@@ -203,7 +206,7 @@ function popupwindow(url, title, w, h) {
 {% else %}
   <div class="panel-body" style="width: 95%;margin-left:auto;margin-right:auto;">
         <div class="well well-sm" style="margin-bottom: 2px;"><strong>No Log added for this experiment. 
-	{%if experiment.created_by.NTID == user.username or user.username in auth_users|key:experiment.experiment_id %}
+{%if experiment.created_by.NTID.upper == user.username.upper or user.username.upper in auth_users|key:experiment.experiment_id%}
 	<a href="/virtual/get/{{experiment.experiment_id}}/log/new/">Add one now!</a>
 	{%endif%}
   </div>
@@ -211,8 +214,7 @@ function popupwindow(url, title, w, h) {
 {% endif%}
 
 <div style="position:relative;text-align:center;width=90%;">
-{%if experiment.created_by.NTID == user.username or user.username in auth_users|key:experiment.experiment_id %}
-
+{%if experiment.created_by.NTID.upper == user.username.upper or user.username.upper in auth_users|key:experiment.experiment_id%}
 	<a href="/virtual/get/{{experiment.experiment_id}}/log/new/" class="btn btn-primary" style="position:relative;margin-right: 50px;">Add Log</a>
 	<a href="/virtual/console/log/" class="btn btn-primary" style="position:relative;margin-right: 50px;">Logging Center</a>
 {%endif%}

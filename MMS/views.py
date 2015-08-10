@@ -119,7 +119,7 @@ def loggedin(request):
 
 def logout(request):
     auth.logout(request)
-    return HttpResponseRedirect("/accounts/logout_success/")
+    return HttpResponseRedirect("/")
 
 def logout_success(request):
     return render_to_response('logout.html')
