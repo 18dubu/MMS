@@ -40,6 +40,7 @@
     <![endif]-->
     <link href="{% static "AdminLTE/plugins/datatables/dataTables.bootstrap.css" %}" rel="stylesheet" type="text/css" />
 
+
 <style>
 div.dataTables_filter {
     text-align: left;
@@ -211,9 +212,9 @@ div.dataTables_filter {
                 <i class="fa fa-dashboard"></i> <span>Dashboard</span> <i class="fa fa-angle-left pull-right"></i>
               </a>
               <ul class="treeview-menu">
-                <li><a href="/"><i class="fa fa-flask"></i> Experiments</a></li>
-                <li><a href="/virtual/search/"><i class="fa fa-edit"></i> Logs</a></li>
-                <li><a href="/physical/search/"><i class="fa fa-cloud-download"></i> Export</a></li>
+                <li><a href="/virtual/new/"><i class="fa fa-flask"></i> Add Experiments</a></li>
+                <li><a href="/virtual/console/log/"><i class="fa fa-edit"></i> Logs</a></li>
+                <li><a href="/physical/search/"><i class="fa fa-cloud-download"></i> Timeline</a></li>
               </ul>
             </li>
 
@@ -248,7 +249,7 @@ div.dataTables_filter {
                 <i class="fa fa-angle-left pull-right"></i>
               </a>
               <ul class="treeview-menu">
-                <li><a href="pages/forms/general.html"><i class="fa fa-circle-o"></i> Add New Experiment</a></li>
+                <li><a href="/virtual/new/"><i class="fa fa-circle-o"></i> Add New Experiment</a></li>
               </ul>
             </li>
             <li>
@@ -741,6 +742,8 @@ div.dataTables_filter {
 
         </section><!-- /.content -->
       </div><!-- /.content-wrapper -->
+
+
       <footer class="main-footer">
         <div class="pull-right hidden-xs">
           <b>Version</b> 2.2.0
