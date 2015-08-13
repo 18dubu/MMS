@@ -11,9 +11,9 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
-            model_name='idmsuser',
-            name='EmailAddress',
-            field=models.EmailField(default=b'', max_length=255, verbose_name=b'Email Address'),
+        migrations.AddField(
+            model_name='sample',
+            name='environment',
+            field=models.CharField(default=b'inVitro', max_length=20, choices=[(b'inVitro', b'inVitro'), (b'inVivo', b'inVivo')]),
         ),
     ]

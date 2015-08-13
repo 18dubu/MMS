@@ -1,5 +1,5 @@
 from django import forms
-from models import Experiment, Sample, Log
+from models import Experiment, Sample, Log, Project
 from django.forms.models import inlineformset_factory
 from django.utils.safestring import mark_safe
 from django.contrib.admin import widgets     
@@ -8,7 +8,7 @@ from django.core.exceptions import ValidationError
 from parsley.decorators import parsleyfy
 
 import selectable.forms as selectable
-from .lookups import InvestigatorLookup,CellmodelLookup, ShrnaLookup
+from .lookups import InvestigatorLookup,CellmodelLookup, ShrnaLookup, ExperimentTitleLookup, ProjectLookup
 
 #http://blog.brendel.com/2012/01/django-modelforms-setting-any-field.html
 class ExtendedMetaModelForm(forms.ModelForm):
@@ -78,13 +78,10 @@ class ExperimentForm(forms.ModelForm):
 		
 		#https://docs.djangoproject.com/en/dev/ref/forms/api/#styling-required-or-erroneous-form-rows	
 		error_messages = {
-            		'project_name': {
-                		'required': ("A project organizes related Experiments!"),
-            		},
 			'title': {'required':('How should I call you, my Experiment?'),},
+			'project_name' : {'required':('A project organizes related Experiments!'),},
 			'description': {'required':('Some words for reference'),},
 			'experiment_date': {'required':('Let\' make a schedule'),},
-			'investigator': {'required':('Guy(s) who will conduct the experiment'),},
 			NON_FIELD_ERRORS: {
                 		'unique_together': "%(model_name)s's %(field_labels)s are not unique.",
             		}
@@ -105,7 +102,23 @@ class ExperimentForm(forms.ModelForm):
 		error_messages={'required':('Guy(s) who will conduct the experiment'),},
 	)
 
+	title = selectable.AutoCompleteSelectField(
+                lookup_class=ExperimentTitleLookup,
+                label='Experiment Title (Search or Add New)',
+                required=True,
+		allow_new=True,
+                error_messages={'required':('How should I call you, my Experiment?'),},
+        )
 	
+
+	project_name = selectable.AutoCompleteSelectField(
+                lookup_class=ProjectLookup,
+                label='Project Name (Search or Add New)',
+                required=True,
+                allow_new=True,
+                error_messages={'required':('A project organizes related Experiments!'),},
+        )
+
 
 	def __init__(self, *args, **kwargs):
         	#user = kwargs.pop('user','')

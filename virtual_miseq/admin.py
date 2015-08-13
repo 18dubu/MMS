@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 
 from django.contrib import admin
-from .models import Experiment, Sample, Log, Treatment, IDMSUser, CcleLibrary, CellModel, VectorLibrary, ShrnaLibrary, MiseqIndex, PoolNumberChoice
+from .models import Experiment, Sample, Log, Treatment, IDMSUser, CcleLibrary, CellModel, VectorLibrary, ShrnaLibrary, MiseqIndex, PoolNumberChoice, Project
 
 from import_export.admin import ImportExportMixin, ExportActionModelAdmin
 
@@ -11,6 +11,9 @@ from ajax_select.admin import AjaxSelectAdmin
 class SampleInline(admin.StackedInline):
     model = Sample
 
+class ProjectAdmin(ImportExportMixin, admin.ModelAdmin):
+        list_filter = ['created_by','name','finish_flag']
+
 class ExperimentAdmin(ImportExportMixin, admin.ModelAdmin):
 	list_filter = ['experiment_date','design_type','finish_flag','workflow', 'investigator']
 	inlines = [
@@ -19,6 +22,7 @@ class ExperimentAdmin(ImportExportMixin, admin.ModelAdmin):
 
 class SampleAdmin(ImportExportMixin, admin.ModelAdmin):
     	list_filter = ['sample_name', 'experiment','time_in_days','created_by','shRNA_on','replicate']
+
 
 class LogAdmin(ImportExportMixin, admin.ModelAdmin):
         list_filter = ['writer', 'related_exp','related_sam','visible_to','created_by','updated_by','download_by']
@@ -49,7 +53,7 @@ class TreatmentAdmin(ImportExportMixin, admin.ModelAdmin):
 class PoolNumberChoiceAdmin(ImportExportMixin, admin.ModelAdmin):
         list_filter = ['description']
 
-
+admin.site.register(Project, ProjectAdmin)
 admin.site.register(Experiment, ExperimentAdmin)
 admin.site.register(Sample, SampleAdmin)
 admin.site.register(Log, LogAdmin)

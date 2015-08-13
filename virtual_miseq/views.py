@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from .models import Experiment, Sample, Log, IDMSUser,MiseqIndex,PoolNumberChoice,Treatment,CcleLibrary,ShrnaLibrary
+from .models import Experiment, Sample, Log, IDMSUser,MiseqIndex,PoolNumberChoice,Treatment,CcleLibrary,ShrnaLibrary, Project
 from forms import ExperimentForm, SampleForm, SampleFormSet, SampleFormSet0, SampleSheetImportForm, LogForm
 
 from django.views.generic import ListView
@@ -35,6 +35,48 @@ def Experiment_asJson(request):
     #                      {'experimentResponse': json})
     #return render_to_response('listView/ajax_search.html',{'experiments' : j})    
 '''
+#alert banner on detail page
+def get_alert(experiment):
+	alert = ''
+	exp = experiment
+	overdue_template = "<div class=\"alert alert-dismissible alert-danger\">\
+			  <button type=\"button\" class=\"close\" data-dismiss=\"alert\">×</button>\
+			  <h4>This Experiment is Overdue!</h4>\
+			  <p>If it has been conducted, you can <a href=\"/TODO/\" class=\"alert-link\">change its status to \"finished\"</a>.</p>\
+			</div>"
+
+	finish_template = "\
+			<div class=\"alert alert-dismissible alert-success\">\
+                        <button type=\"button\" class=\"close\" data-dismiss=\"alert\">×</button>\
+			<h4>This Experiment is marked as finished!</h4>\
+			 <p>If you haven't requested analysis, you can <a href=\"/TODO/\" class=\"alert-link\">Request now</a>. Otherwise, if the status is not correct, you can <a href=\"/TODO/\" class=\"alert-link\">edit the status</a>.</p>\
+			</div>"
+
+	upcoming_template = "\
+                        <div class=\"alert alert-dismissible alert-warning\">\
+                        <button type=\"button\" class=\"close\" data-dismiss=\"alert\">×</button>\
+			<h4>This Experiment is due in the coming days!</h4>\
+                        <p>If it has been conducted, you can <a href=\"/TODO/\" class=\"alert-link\">change its status to \"finished\"</a>.</p>\
+                        <p>Otherwise, you can <a href=\"/TODO/\" class=\"alert-link\">edit the experiment</a>.</p>\
+                        </div>"
+
+
+	#overdue
+	now = timezone.make_aware(datetime.now(), timezone.get_default_timezone())
+	if exp.experiment_date < now and exp.finish_flag != 'Finished':
+		alert = overdue_template
+	#finished
+	if exp.finish_flag == 'Finished':
+		alert = finish_template
+	#upcoming
+	if exp.finish_flag != 'Finished' and exp.experiment_date > now:
+		delta = exp.experiment_date - now
+		if delta.days < 2: # due in two days
+			alert = upcoming_template
+	#analysis
+	#TODO
+
+	return alert
 
 def get_auth_users(experiments):
 	auth_users = {}
@@ -48,6 +90,132 @@ def get_auth_users(experiments):
                 auth_users[e.experiment_id] = curr
 
 	return auth_users
+
+
+#experiment should be sorted by conducting date
+def get_dashboard_data(experiments):
+	todo = ''
+	finish = ''
+	calendar = '['
+	todo_template = "<li>\
+                      <span class=\"handle\">\
+                        <i class=\"fa fa-ellipsis-v\"></i>\
+                        <i class=\"fa fa-ellipsis-v\"></i>\
+                      </span>\
+                      <input type=\"checkbox\" value=\"\" name=\"\" />\
+                      <span class=\"text\"><strong>Project: </strong> %s <strong>&nbsp;&nbsp;Experiment: </strong><a href=\"%s\">%s</a></span>\
+                      <small class=\"label %s\"><i class=\"fa fa-clock-o\"></i> %s </small>\
+                    </li>\
+"
+        finish_template = "<tr>\
+                          <td>%s</td>\
+                          <td><a href=\"%s\">%s</a></td>\
+                          <td>%s</td>\
+                          <td>%s</td>\
+                        </tr>\
+        "
+
+	calendar_template = "{title: '%s',start: new Date(y%s, m%s, d%s),url: '%s',backgroundColor: \"%s\",borderColor: \"%s\"},"
+
+	labels = ['label-danger','label-warning','label-primary','label-info','label-default','label-success']	
+	colors = ['#f56954','#f39c12','#3c8dbc','#00c0ef','#0073b7','#00a65a']
+	j=0
+	k=0
+	limit=8
+	due_in_two_days = 0
+	for exp in experiments:
+		now = timezone.make_aware(datetime.now(), timezone.get_default_timezone())
+			
+		#finish list
+		if exp.finish_flag == 'Finished' and j<=limit:
+                        j+=1
+                        if exp.feedback_flag == 'Negative':
+                                info = "<small class=\"label label-danger\"><i class=\"fa ion-flag\"></i> Negative </small>"
+                        elif exp.feedback_flag == 'Positive':
+                                info = "<small class=\"label label-success\"><i class=\"fa ion-flag\"></i> Positive </small>"
+                        elif exp.feedback_flag == 'Questionable':
+                                info = "<small class=\"label label-warning\"><i class=\"fa ion-flag\"></i> Questionable </small>"
+                        else:
+                                info = ''
+                        tmp1 = finish_template % (exp.get_taged_project_name,exp.get_absolute_url,exp.title,exp.comment,info)
+                        finish += tmp1
+
+		#todo list
+		if exp.experiment_date > now:
+			delta = exp.experiment_date - now
+			k+=1		
+			if delta.days < 2: #two days
+				i = 1
+				due_in_two_days += 1
+				info = str(delta.seconds/3600) + ' hours'
+			elif delta.days < 5: #five days
+                                i = 2
+				info = str(delta.days) + ' days'
+			elif delta.days < 10: #10 days
+                                i = 3
+				info = str(delta.days) + ' days'
+			elif delta.days < 30: #30 days
+                                i = 4
+				info = str(delta.days/7) + ' weeks'
+			else:
+                                i = 4
+				info = str(delta.days/(30)) + ' months'
+			if (k < limit):
+				tmp2 = todo_template % (exp.get_taged_project_name,exp.get_absolute_url,exp.title, labels[i], info)
+				todo += tmp2
+		#calendar
+		else:
+			if exp.finish_flag == 'Finished':
+				i= 5
+			else:
+				i= 0
+		y_delta = exp.experiment_date.year - now.year
+		m_delta = exp.experiment_date.month - now.month
+		d_delta = exp.experiment_date.day - now.day
+		if y_delta==0: y_delta=''
+		elif y_delta>0: y_delta='+'+str(y_delta)
+		elif y_delta<0: y_delta=str(y_delta)
+		if m_delta==0: m_delta=''
+		elif m_delta>0: m_delta='+'+str(m_delta)
+		elif m_delta<0: m_delta=str(y_delta)
+		if d_delta==0: d_delta=''
+		elif d_delta>0: d_delta='+'+str(d_delta)
+		elif d_delta<0: d_delta=str(d_delta)
+		
+		calendar += calendar_template %(exp.title,y_delta,m_delta,d_delta,exp.get_absolute_url,colors[i],colors[i])
+	calendar += ']'
+	return todo,due_in_two_days,calendar,finish
+	
+def get_finished_list_html(experiments):
+        content = ''
+        template = "<tr>\
+                          <td>%s</td>\
+                          <td><a href=\"%s\">%s</a></td>\
+                          <td>%s</td>\
+			  <td>%s</td>\
+                        </tr>\
+	"
+        j=0
+	limit=8
+	for exp in experiments:
+                if exp.finish_flag == 'Finished' and j<=limit:
+			j+=1
+			if exp.feedback_flag == 'Negative':
+				info = "<small class=\"label label-danger\"><i class=\"fa ion-flag\"></i> Negative </small>"
+			elif exp.feedback_flag == 'Positive':
+                                info = "<small class=\"label label-success\"><i class=\"fa ion-flag\"></i> Positive </small>"
+			elif exp.feedback_flag == 'Questionable':
+                                info = "<small class=\"label label-warning\"><i class=\"fa ion-flag\"></i> Questionable </small>"
+			else:
+				info = ''
+                        tmp = template % (exp.get_taged_project_name,exp.get_absolute_url,exp.title,exp.comment,info)
+                        content += tmp
+
+        return content
+
+	
+
+###############################################################
 
 def datatable(request):
 	experiments = Experiment.objects.all()
@@ -149,6 +317,8 @@ def detail(request, experiment_id):
         args['experiment'] = experiment
 	args['auth_users'] = get_auth_users([experiment])
 	args['posts'] = posts
+	args['alert'] = get_alert(experiment)
+	
 	if request.POST.get('delete_sam'):
                 Sample.objects.filter(pk=request.POST.get('delete_sam')).delete()
                 #experiment.sample_set.remove(sam2delete)
@@ -252,25 +422,29 @@ def new_exp2(request, mode, experiment_id=None):
                 experiment = Experiment()#(user=request.user)
 
         if request.POST:
-                if 'create_exp' in request.POST:
+                if 'next' in request.POST:
                         expform = ExperimentForm(request.POST, instance=experiment)
-			
+					
 			if expform.is_valid():
                           	new_exp = expform.save(commit=False)
 
                    	        #automatic generate or modify fields
                                 #save modified form
-				new_exp.created_by = IDMSUser.objects.get(NTID__iexact=request.user.username)
-                      		new_exp.save()
+				try:
+					new_exp.created_by = IDMSUser.objects.get(NTID__iexact=request.user.username)
+                      		except:
+					raise("can not find"+request.user.username+'in IDMS db error')
+				new_exp.save()
                                	expform.save_m2m()
                                 #sample forms
-
-                               	return HttpResponseRedirect('/virtual/new/confirm/%s/' % new_exp.experiment_id)
-			
+				return HttpResponseRedirect('/virtual/get/%s/' % new_exp.experiment_id)
 		elif 'delete_exp' in request.POST:
 			if experiment_id is not None:
                         	exp2delete = get_object_or_404(Experiment, experiment_id=experiment.experiment_id).delete()
-                        	return HttpResponseRedirect('/virtual/delete/confirm/%s/' % experiment.experiment_id)	
+                        	if request.user.is_authenticated():
+					return HttpResponseRedirect('/virtual/console/')	
+				else:
+					return HttpResponseRedirect('/')
 			else:
 				return HttpResponseRedirect('/')
         	elif 'cancel_exp' in request.POST:
@@ -327,7 +501,7 @@ def add_edit_sample(request,experiment_id, mode,sample_id=None):
 	title=''
 	if request.POST:
 		if request.POST.get('delete_sam', None):
-			return HttpResponse('<script type="text/javascript">window.close();window.opener.location.reload(true);</script>')
+			return HttpResponse('<script type="text/javascript">location.reload();</script>')
 		
 		samforms = SampleFormSet(request.POST,instance=experiment)	
 		
@@ -531,15 +705,24 @@ def signup(request):
 @login_required
 def console(request):
 	
-	experiments = Experiment.objects.filter(Q(investigator__NTID__iexact=request.user.username) | Q(created_by__NTID__iexact=request.user.username)).order_by('-created_date')
+	experiments = Experiment.objects.filter(Q(investigator__NTID__iexact=request.user.username) | Q(created_by__NTID__iexact=request.user.username)).order_by('experiment_date')
 	idms = IDMSUser.objects.get(NTID__iexact=request.user.username)	
+        posts = Log.objects.filter(created_by__NTID__iexact=request.user.username).order_by('-created_date')
+	
 	args = {}
         args.update(csrf(request))
         args['user'] = request.user
 	args['experiments'] = experiments
 	args['auth_users'] = get_auth_users(experiments)
         args['idms'] = idms
-	#return render_to_response('consoleView/table.html',args)
+	todo,due_in_2,calendar,finished = get_dashboard_data(experiments)
+	args['todo'] = todo
+	args['due_in_2'] = due_in_2
+
+	args['calendar_data'] =  calendar
+	args['finished'] = finished#get_finished_list_html(experiments)
+	args['posts'] = posts	
+
 	return render_to_response('consoleView/account.html',args)
 
 @login_required
@@ -646,9 +829,11 @@ class TreatmentList(ListView):
 
 
 ######################registered template filters##########################
+#{{ mydict|get_item:item.NAME }}
 @register.filter
 def get_item(dictionary, key):
     return dictionary.get(key)
+
 
 @register.filter
 def key(d, key_name):

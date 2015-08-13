@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from django.db import models, migrations
 import datetime
+import django.utils.timezone
 import uuid
 
 
@@ -81,9 +82,9 @@ class Migration(migrations.Migration):
                 ('reads', models.BigIntegerField(default=21)),
                 ('design_type', models.CharField(max_length=200, null=True, blank=True)),
                 ('reverse_complement', models.IntegerField(default=0, null=True, verbose_name=b'Reverse Complement')),
-                ('feedback_flag', models.NullBooleanField()),
+                ('feedback_flag', models.CharField(blank=True, max_length=20, null=True, choices=[(b'Negative', b'Negative'), (b'Positive', b'Positive'), (b'Questionable', b'Questionable')])),
                 ('comment', models.CharField(max_length=200, null=True, blank=True)),
-                ('created_date', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Created Date', blank=True)),
+                ('created_date', models.DateTimeField(default=django.utils.timezone.now, verbose_name=b'Created Date', blank=True)),
                 ('updated_date', models.DateTimeField(auto_now=True, verbose_name=b'Updated date', null=True)),
                 ('download_date', models.DateTimeField(null=True, verbose_name=b'Download Date', blank=True)),
                 ('finish_flag', models.CharField(default=b'Ongoing', max_length=20, blank=True, choices=[(b'Finished', b'Finished'), (b'Ongoing', b'Ongoing'), (b'Terminated', b'Terminated')])),
@@ -96,7 +97,7 @@ class Migration(migrations.Migration):
                 ('UserID', models.IntegerField(default=0, verbose_name=b'User ID')),
                 ('Username', models.CharField(default=b'', max_length=255, verbose_name=b'User Name')),
                 ('Password', models.CharField(default=b'', max_length=32, verbose_name=b'Password')),
-                ('EmailAddress', models.EmailField(default=b'test@test.com', max_length=255, verbose_name=b'Email Address')),
+                ('EmailAddress', models.EmailField(default=b'', max_length=255, verbose_name=b'Email Address')),
                 ('FirstName', models.CharField(default=b'', max_length=65, verbose_name=b'First Name')),
                 ('LastName', models.CharField(default=b'', max_length=65, verbose_name=b'Last Name')),
                 ('Phone', models.CharField(default=b'', max_length=20, verbose_name=b'Phone')),
@@ -120,6 +121,21 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
+            name='Log',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('subject', models.CharField(max_length=500)),
+                ('content', models.TextField()),
+                ('visible_to', models.CharField(default=b'Collaborators', max_length=20, blank=True, choices=[(b'Everyone', b'Everyone'), (b'Me', b'Me'), (b'Collaborators', b'Collaborators')])),
+                ('created_date', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Created Date', blank=True)),
+                ('updated_date', models.DateTimeField(auto_now=True, verbose_name=b'Updated date', null=True)),
+                ('download_date', models.DateTimeField(null=True, verbose_name=b'Download Date', blank=True)),
+                ('created_by', models.ForeignKey(related_name='log_created_by', blank=True, to='virtual_miseq.IDMSUser', null=True)),
+                ('download_by', models.ManyToManyField(related_name='log_download_by', to='virtual_miseq.IDMSUser', blank=True)),
+                ('related_exp', models.ForeignKey(related_name='log_related_exp', blank=True, to='virtual_miseq.Experiment', null=True)),
+            ],
+        ),
+        migrations.CreateModel(
             name='MiseqIndex',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
@@ -134,6 +150,20 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('description', models.CharField(max_length=300)),
                 ('approvalStatus', models.BooleanField(default=True, choices=[(True, b'Approved'), (False, b'Pending')])),
+            ],
+        ),
+        migrations.CreateModel(
+            name='Project',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(max_length=200)),
+                ('created_date', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Created Date', blank=True)),
+                ('updated_date', models.DateTimeField(auto_now=True, verbose_name=b'Updated date', null=True)),
+                ('download_date', models.DateTimeField(null=True, verbose_name=b'Download Date', blank=True)),
+                ('finish_flag', models.CharField(default=b'Ongoing', max_length=20, blank=True, choices=[(b'Finished', b'Finished'), (b'Ongoing', b'Ongoing'), (b'Terminated', b'Terminated')])),
+                ('created_by', models.ForeignKey(related_name='pro_created_by', blank=True, to='virtual_miseq.IDMSUser', null=True)),
+                ('download_by', models.ManyToManyField(related_name='pro_download_by', to='virtual_miseq.IDMSUser', blank=True)),
+                ('updated_by', models.ManyToManyField(related_name='pro_updated_by', to='virtual_miseq.IDMSUser', blank=True)),
             ],
         ),
         migrations.CreateModel(
@@ -248,6 +278,21 @@ class Migration(migrations.Migration):
             model_name='sample',
             name='updated_by',
             field=models.ManyToManyField(related_name='sample_updated_by', to='virtual_miseq.IDMSUser', blank=True),
+        ),
+        migrations.AddField(
+            model_name='log',
+            name='related_sam',
+            field=models.ForeignKey(related_name='log_related_sam', blank=True, to='virtual_miseq.Sample', null=True),
+        ),
+        migrations.AddField(
+            model_name='log',
+            name='updated_by',
+            field=models.ManyToManyField(related_name='log_updated_by', to='virtual_miseq.IDMSUser', blank=True),
+        ),
+        migrations.AddField(
+            model_name='log',
+            name='writer',
+            field=models.ManyToManyField(related_name='writer', to='virtual_miseq.IDMSUser', blank=True),
         ),
         migrations.AddField(
             model_name='experiment',

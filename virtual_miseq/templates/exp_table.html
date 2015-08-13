@@ -7,6 +7,7 @@ $.extend( $.fn.dataTable.defaults, {
 
 $(document).ready(function() {
     $('#recent').dataTable( {
+	'bAutoWidth': true ,
         "pageLength": 100,
         "order": [[ 2, "desc" ]],
 	//"oSearch": {"sSearch": "{{g}}"},
@@ -55,11 +56,11 @@ $(document).ready(function() {
                                 <td>{% autoescape off %}{{experiment.get_taged_created_by_name}}{% endautoescape %}</td>
                                  <td>
 				{%if experiment.created_by.NTID.upper == user.username.upper or user.username.upper in auth_users|key:experiment.experiment_id%}
-                                <a href="/virtual/edit/{{experiment.experiment_id}}/" type="submit" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;">Edit Experiment</a>
-                                <a href="/virtual/get/{{experiment.experiment_id}}/#sample" type="submit" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;">Edit sample</a>
-                                {%endif%}
-				<a href="/virtual/export/{{experiment.experiment_id}}/samplesheet/" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;">SampleSheet</a>
-                                </td>
+                                <a href="/virtual/get/{{experiment.experiment_id}}/#sample" type="submit" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;">Edit</a>
+                                {% else %}
+				<a href="/virtual/export/{{experiment.experiment_id}}/samplesheet/" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;">Download</a>
+                                {% endif %}
+				</td>
 
                         </tr>
 

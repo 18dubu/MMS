@@ -5,7 +5,7 @@ from django.utils.encoding import smart_unicode
 from django.contrib.auth.models import User
 import uuid
 import string
-
+from django.utils import timezone
 ###############parameters######################
 
 USER_PRIVILEGE_CHOICE=(('s','s'),('i','i'),('a','a'),('b','b'),('c','c'),('f','f'),('g','g'),('o','o'),('x','x'),('y','y'),('z','z'))
@@ -260,11 +260,35 @@ class ShrnaLibrary(models.Model):
         def __unicode__(self):
                 return self.LibName
 
+class Project(models.Model):
+	name = models.CharField(max_length=200)
+	
+	#automatic-generated
+        created_by = models.ForeignKey(IDMSUser,blank=True,null=True,related_name='pro_created_by')
+        created_date = models.DateTimeField("Created Date",default=datetime.datetime.now,blank=True)
+        updated_by = models.ManyToManyField(IDMSUser,blank=True,related_name='pro_updated_by')
+        updated_date = models.DateTimeField("Updated date",auto_now_add=False, auto_now=True,blank=True,null=True)
+        download_by = models.ManyToManyField(IDMSUser,blank=True,related_name='pro_download_by')
+        download_date = models.DateTimeField("Download Date",null=True,blank=True)
+
+        finish_flag = models.CharField(blank=True,max_length=20,
+                        choices = (
+                        ("Finished", "Finished"),
+                        ("Ongoing", "Ongoing"),
+                        ("Terminated","Terminated")
+                ),
+                default="Ongoing",
+        )
+
+
+	def __unicode__(self):
+                return self.name
+
 
 class Experiment(models.Model):
 	#input-required
         experiment_id = models.CharField(max_length=200,blank=True, unique=True,default=uuid.uuid4)
-	project_name =  models.CharField(max_length=200,default='')
+	project_name =  models.CharField(max_length=200,default='')# models.ForeignKey(Project,related_name='experiments')#models.CharField(max_length=200,default='')
 	title = models.CharField(max_length=200)
         description = models.TextField()
         experiment_date = models.DateTimeField('Date of experiment')
@@ -284,13 +308,21 @@ class Experiment(models.Model):
 	#input-alternative
 	design_type = models.CharField(max_length=200, null=True, blank=True)
 	reverse_complement = models.IntegerField("Reverse Complement",default=0,null=True)
-	feedback_flag = models.NullBooleanField(blank=True,null=True)
-	finish_flag = models.NullBooleanField(blank=True,null=True)
+	feedback_flag =  models.CharField(blank=True,max_length=20,
+                        choices = (
+                        ("Negative", "Negative"),
+                        ("Positive", "Positive"),
+                        ("Questionable","Questionable")
+                ),
+                null=True,
+        )
+
+			#models.NullBooleanField(blank=True,null=True)
 	comment =  models.CharField(max_length=200,blank=True,null=True)
 
 	#automatic-generated
 	created_by = models.ForeignKey(IDMSUser,blank=True,null=True,related_name='exp_created_by')
-	created_date = models.DateTimeField("Created Date",default=datetime.datetime.now,blank=True)
+	created_date = models.DateTimeField("Created Date",default=timezone.now,blank=True)
 	updated_by = models.ManyToManyField(IDMSUser,blank=True,related_name='exp_updated_by')
 	updated_date = models.DateTimeField("Updated date",auto_now_add=False, auto_now=True,blank=True,null=True)
 	download_by = models.ManyToManyField(IDMSUser,blank=True,related_name='exp_download_by')
@@ -324,7 +356,13 @@ class Experiment(models.Model):
 	@property
 	def get_standard_created_date(self):
 		#return "%s-%s-%s"%(self.created_date.year, self.created_date.month, self.created_date.day )
-		return datetime.datetime(self.created_date.year, self.created_date.month, self.created_date.day,self.created_date.hour,self.created_date.minute,self.created_date.second)
+		return datetime.datetime(self.created_date.year, self.created_date.month, self.created_date.day,self.created_date.hour,self.created_date.minute,self.created_date.second).strftime("%Y-%m-%d %H:%M")
+
+        @property
+        def get_standard_experiment_date(self):
+                return datetime.datetime(self.experiment_date.year, self.experiment_date.month, self.experiment_date.day).strftime("%Y-%m-%d ")
+
+
 	@property
         def get_taged_project_name(self):
 		return u"<span class=\'label label-info\' style=\'font-size:85%%;font-weight:500;background-color:#9999FF;\'><a href=\'%s\'><font color='white'>%s</font></a></span>" % ('/virtual/search/?p='+self.project_name.replace('\s+','%20'), self.project_name)
@@ -334,7 +372,7 @@ class Experiment(models.Model):
         def get_taged_investigator_name(self):
                 tags = []
 		for i in self.investigator.all():
-			tags.append("<span class=\'label label-info\' style=\'font-size:85%%;font-weight:500;background-color:#66C285;\'><a href=\'%s\'><font color='white'>%s</font></a></span>" % ('/virtual/search/?u='+'%20'.join([i.FirstName, i.LastName]), ' '.join([i.FirstName, i.LastName])))
+			tags.append("<span class=\'label label-success\' style=\'font-size:85%%;font-weight:500;background-color:#66C285;\'><a href=\'%s\'><font color='white'>%s</font></a></span>" % ('/virtual/search/?u='+'%20'.join([i.FirstName, i.LastName]), ' '.join([i.FirstName, i.LastName])))
 		
 		return ', '.join(tags)
 
@@ -349,7 +387,7 @@ class Experiment(models.Model):
 	@property
         def get_taged_created_by_name(self):
                 if self.created_by:
-			tags="<span class=\'label label-info\' style=\'font-size:85%%;font-weight:500;background-color:#66C285;\'><a href=\'%s\'><font color='white'>%s</font></a></span>" % ('/virtual/search/?u='+'%20'.join([self.created_by.FirstName, self.created_by.LastName]), ' '.join([self.created_by.FirstName, self.created_by.LastName]))
+			tags="<span class=\'label label-success\' style=\'font-size:85%%;font-weight:500;background-color:#66C285;\'><a href=\'%s\'><font color='white'>%s</font></a></span>" % ('/virtual/search/?u='+'%20'.join([self.created_by.FirstName, self.created_by.LastName]), ' '.join([self.created_by.FirstName, self.created_by.LastName]))
 
                 	return tags
 		else:
@@ -378,13 +416,22 @@ class Sample(models.Model):
     			(False, "OFF")
 		)
 	)
+	environment =  models.CharField(max_length=20,
+                        choices = (
+                        ("inVitro", "inVitro"),
+                        ("inVivo", "inVivo"),
+                ),
+                default="inVitro",
+        )
+
+	replicate =  models.CharField(max_length=5,
+                        choices = SAMPLE_REPLICATE_CHOICE,
+                        null=True,
+                        )
+
 	time_in_days =  models.PositiveSmallIntegerField()
 	treatment = models.ForeignKey(Treatment,blank=True, null=True,related_name='treatment_compoundName')
 	treatment_dose = models.IntegerField(blank=True,null=True)
-	replicate =  models.CharField(max_length=5,
-			choices = SAMPLE_REPLICATE_CHOICE,
-			null=True, 			
-			)	
 	feedback_flag = models.NullBooleanField(blank=True,null=True)
 	finish_flag = models.CharField(blank=True,max_length=20,
 			choices = (

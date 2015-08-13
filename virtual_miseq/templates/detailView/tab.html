@@ -7,7 +7,7 @@
 
 <script>
 $(document).ready(function() {
-	$('#sample').dataTable( {
+
         "pageLength": 20,
 	"columnDefs": [
             {
@@ -50,21 +50,21 @@ function popupwindow(url, title, w, h) {
 
 
 <ul class="nav nav-tabs">
-  <li class="active"><a href="#home" data-toggle="tab" >Experiments</a></li>
-  <li class=""><a href="#logs" data-toggle="tab" >Logs</a></li>
-  <li ><a href="#ana" data-toggle="tab" >Analysis</a></li>
+  <li class="active"><a href="#home" data-toggle="tab" aria-expanded="false">Home</a></li>
+  <li class=''><a href="#profile" data-toggle="tab" aria-expanded="true">Profile</a></li>
+  <li class="disabled"><a>Disabled</a></li>
+
   <li class="dropdown">
     <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-      Actions <span class="caret"></span>
+      Dropdown <span class="caret"></span>
     </a>
     <ul class="dropdown-menu">
-      <li><a href="/virtual/export/{{experiment.experiment_id}}/samplesheet/" target="_blank" data-toggle="tab">Generate SampleSheet</a></li>
+      <li><a href="#dropdown1" data-toggle="tab">Action</a></li>
       <li class="divider"></li>
-      <li><a href="/virtual/export/{{experiment.experiment_id}}/log/" target="_blank" data-toggle="tab">Download Logs</a></li>
-      <li class="divider"></li>
-      <li><a href="/virtual/import/{{experiment.experiment_id}}" target="_blank" data-toggle="tab">Import SampleSheet (Beta)</a></li>
+      <li><a href="#dropdown2" data-toggle="tab">Another action</a></li>
     </ul>
   </li>
+<li>
 
 </li>
 </ul>
@@ -72,7 +72,6 @@ function popupwindow(url, title, w, h) {
 
 
 <div id="myTabContent" class="tab-content">
-
   <div class="tab-pane fade active in" id="home">
 
     <div style="width: 95%;margin-left:auto;margin-right:auto;overflow-x: scroll;overflow-y: hidden;">
@@ -86,9 +85,11 @@ function popupwindow(url, title, w, h) {
 	    <h2 style="float:left;margin-top: 2px;margin-bottom: 0px;margin-right: 20px;">Experiment  </h2>
 	{%if experiment.created_by.NTID.upper == user.username.upper or user.username.upper in auth_users|key:experiment.experiment_id%}
 	    <a href="/virtual/edit/{{experiment.experiment_id}}/" class="btn btn-default" style="position:relative;margin-right: 20px;">Edit</a>
+	    <a href="/virtual/get/{{experiment.experiment_id}}/log/new/" class="btn btn-default" style="position:relative;margin-right: 20px;">Add Log</a>
 	    <a href="/virtual/import/{{experiment.experiment_id}}" class="btn btn-default" style="position:relative;margin-right: 20px;">Import SampleSheet</a>
 	{%endif%}
 	    <a href="/virtual/export/{{experiment.experiment_id}}/samplesheet/" class="btn btn-default" style="position:relative;margin-right: 20px;">Generate SampleSheet</a>
+	    <a href="/virtual/export/{{experiment.experiment_id}}/log/" class="btn btn-default" style="position:relative;">Download Logs</a>
 	  </div> 
 	 </div>
 
@@ -171,7 +172,7 @@ function popupwindow(url, title, w, h) {
 
 {% else %}
   <div class="panel-body" style="width: 95%;margin-left:auto;margin-right:auto;">
-        <div class="well well-sm" style="margin-bottom: 2px;"><strong>No Sample added for this experiment</div></strong>
+        <div class="well well-sm" style="margin-bottom: 2px;"><strong>No Sample added for this experiment</div>
   </div>
 
 {% endif %}
@@ -191,10 +192,10 @@ function popupwindow(url, title, w, h) {
  </div> <!--tab 1-->
  
 
- <div class="tab-pane fade" id="logs">
+ <div class="tab-pane fade" id="profile">
 <!-- Post Section -->
 
-	<div class="panel panel-success" style="width:95%;margin-top:20px;margin-left:auto;margin-right:auto;">
+	<div class="panel panel-success" style="width:95%;margin-left:auto;margin-right:auto;">
 	  <div class="panel-heading" >
 	    <h3>Logs</h3>
 	  </div>
@@ -239,57 +240,25 @@ function popupwindow(url, title, w, h) {
 
 {% else %}
   <div class="panel-body" style="width: 95%;margin-left:auto;margin-right:auto;">
-        <div class="well well-sm" style="margin-bottom: 2px;"><strong>No Log added for this experiment.</strong> 
-  {%if experiment.created_by.NTID.upper == user.username.upper or user.username.upper in auth_users|key:experiment.experiment_id%}
+        <div class="well well-sm" style="margin-bottom: 2px;"><strong>No Log added for this experiment. 
+{%if experiment.created_by.NTID.upper == user.username.upper or user.username.upper in auth_users|key:experiment.experiment_id%}
 	<a href="/virtual/get/{{experiment.experiment_id}}/log/new/">Add one now!</a>
 	{%endif%}
   </div>
   </div>
-  {% endif%}
+{% endif%}
 
-  <div style="position:relative;text-align:center;width=90%;">
-  {%if experiment.created_by.NTID.upper == user.username.upper or user.username.upper in auth_users|key:experiment.experiment_id%}
+<div style="position:relative;text-align:center;width=90%;">
+{%if experiment.created_by.NTID.upper == user.username.upper or user.username.upper in auth_users|key:experiment.experiment_id%}
 	<a href="/virtual/get/{{experiment.experiment_id}}/log/new/" class="btn btn-primary" style="position:relative;margin-right: 50px;">Add Log</a>
 	<a href="/virtual/console/log/" class="btn btn-primary" style="position:relative;margin-right: 50px;">Logging Center</a>
-  {%endif%}
+{%endif%}
  	<a href="/virtual/export/{{experiment.experiment_id}}/log/" class="btn btn-primary" style="position:relative;margin-right: 50px;">Download Logs</a>
 
-  </div><!--panel-body-->
+</div>
 <hr>
+
  </div>  <!--tab 2-->
-
-
-  <div class="tab-pane fade" id="ana">
-        <div class="panel panel-info" style="width:95%;margin-top:20px;margin-left:auto;margin-right:auto;">
-          <div class="panel-heading" >
-            <h3>Analysis</h3>
-          </div>
-        </div>
-        {% if experiment.finish_flag == "Finished" %}
-
-        <div class="container"  >
-          <div class="row">
-            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-
-            </div>
-        </div>
-    </div>
-
-    <hr>
-
-        {% else %}
-          <div class="panel-body" style="width: 95%;margin-left:auto;margin-right:auto;">
-          <div class="well well-sm" style="margin-bottom: 2px;"><strong>The Experiment Is Marked As "Ongoing" Now!
-           {%if experiment.created_by.NTID.upper == user.username.upper or user.username.upper in auth_users|key:experiment.experiment_id%}
-                <a href="/virtual/get/{{experiment.experiment_id}}/log/new/">Change It To "Finish" and Submit For Analysis!</a>
-           {%endif%}
-          </div>
-        </div>
-        {% endif%}
-        <hr>
-  </div>
-
-<hr>
 
 </div>
 

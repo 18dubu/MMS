@@ -15,6 +15,7 @@ $.extend( $.fn.dataTable.defaults, {
 
 $(document).ready(function() {
     $('#recent').dataTable( {
+	"order": [[ 2, "desc" ]],
 	"pageLength": 100,
 	//"oSearch": {"sSearch": "{{g}}"},
 	"aoSearchCols": [null,{ "sSearch": "{{p}}"},null,{ "sSearch": "{{u}}"},null,null],	
@@ -24,13 +25,15 @@ $(document).ready(function() {
                 // The `data` parameter refers to the data for the cell (defined by the
                 // `data` option, which defaults to the column being worked with, in
                 // this case `data: 0`.
+                className: "dt-center",
                 "render": function ( data, type, row ) {
                     return data;
                 },
-                "targets": 0
+                "targets": "_all"//[0,1,2,3,4,5]
             },
             //{ "visible": false,  "targets": [ 4 ] }
         ]
+
     } );
 } );
 </script>
@@ -97,9 +100,9 @@ $(document).ready(function() {
             <tr>
                 <th>Title</th>
                 <th>Project</th>
-                <th>Date</th>
+                <th>Creation Date</th>
+		<th>Sample</th>
                 <th>Investigators</th>
-                <th>Created By</th>
                 <th>Action</th>
             </tr>
         </thead>
@@ -108,9 +111,9 @@ $(document).ready(function() {
             <tr>
                 <th>Title</th>
                 <th>Project</th>
-                <th>Date</th>
+                <th>Creation Date</th>
+		<th>Sample</th>
                 <th>Investigators</th>
-                <th>Created By</th>
                 <th>Action</th>
             </tr>
         </tfoot>
@@ -121,14 +124,13 @@ $(document).ready(function() {
                                 <td><a href="{{experiment.get_absolute_url}}">{{experiment.title}}</a></td>
                                 <td>{% autoescape off %}{{experiment.get_taged_project_name}} {% endautoescape %}</td>
                                 <td>{{ experiment.get_standard_created_date }}</td>
-                                <td>{% autoescape off %}{{experiment.get_taged_investigator_name}} {% endautoescape %}</td>
-                                <td>{% autoescape off %}{{experiment.get_taged_created_by_name}}{% endautoescape %}</td>
+				<td>{{ experiment.sample_set.count }}</td>
+				<td>{% autoescape off %}{{experiment.get_taged_investigator_name}} {% endautoescape %}</td>
 				 <td>
                                 {%if experiment.created_by.NTID.upper == user.username.upper or user.username.upper in auth_users|key:experiment.experiment_id%}
-				<a href="/virtual/edit/{{experiment.experiment_id}}/" type="submit" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;">Edit Experiment</a>
-                                <a href="/virtual/get/{{experiment.experiment_id}}/#sample" type="submit" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;">Edit sample</a>
+                                <a href="/virtual/get/{{experiment.experiment_id}}/#sample" type="submit" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;">Edit</a>
                                 {%endif%}
-                                <a href="/virtual/export/{{experiment.experiment_id}}/samplesheet/" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;">Generate SampleSheet</a>
+                                <a href="/virtual/export/{{experiment.experiment_id}}/samplesheet/" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;">Download</a>
                                 </td>
 
 			</tr>

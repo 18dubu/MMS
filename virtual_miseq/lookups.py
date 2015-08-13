@@ -1,10 +1,47 @@
 from ajax_select import LookupChannel
 from django.utils.html import escape
 from django.db.models import Q
-from virtual_miseq.models import Experiment, Sample, Log, IDMSUser, MiseqIndex, CcleLibrary, ShrnaLibrary
+from virtual_miseq.models import Experiment, Sample,Project, Log, IDMSUser, MiseqIndex, CcleLibrary, ShrnaLibrary
 
 from selectable.base import ModelLookup
 from selectable.registry import registry
+
+
+class ExperimentTitleLookup(ModelLookup):
+    model = Experiment
+    search_fields = ('title__icontains', )
+    def get_item_label(self, item):
+	if item.created_by:
+                return "%s (%s)" % (item.title,item.created_by)
+        else:
+                return "%s (%s)" % (item.title,'-')
+
+    def get_item_value(self, item):
+        # Display for currently selected item
+        return item.title
+registry.register(ExperimentTitleLookup)
+
+
+
+class ProjectLookup(ModelLookup):
+    model = Experiment
+    search_fields = ('project_name__icontains', )
+
+#    def get_query(self, request, term):
+#        qs = super(ProjectLookup, self).get_query(request, term)
+#	return qs.values_list('project_name', flat=True).distinct()
+
+    def get_item_value(self, item):
+        # Display for currently selected item
+        return item.project_name
+
+    def get_item_label(self, item):
+        if item.created_by:
+		return "%s (%s)" % (item.project_name,item.created_by)
+	else:
+		return "%s (%s)" % (item.project_name,'-')
+registry.register(ProjectLookup)
+
 
 class InvestigatorLookup(ModelLookup):
     model = IDMSUser
