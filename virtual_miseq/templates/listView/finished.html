@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+{% extends "base.html" %}
+{% load staticfiles %}
+<html>
+{% block script %}
+<script src="{% static "js/jquery.dataTables.js" %}"></script>
+<link rel="stylesheet" href="{% static "css/jquery.dataTables.css" %}" />
+
+
+<script>
+$.extend( $.fn.dataTable.defaults, {
+    "searching": true,
+    "ordering": true
+} );
+
+$(document).ready(function() {
+    $('#recent').dataTable( {
+	"order": [[ 2, "desc" ]],
+	"pageLength": 100,
+	//"oSearch": {"sSearch": "{{g}}"},
+	"aoSearchCols": [null,{ "sSearch": "{{p}}"},null,{ "sSearch": "{{u}}"},null,null],	
+
+	"columnDefs": [
+            {
+                // The `data` parameter refers to the data for the cell (defined by the
+                // `data` option, which defaults to the column being worked with, in
+                // this case `data: 0`.
+                className: "dt-center",
+                "render": function ( data, type, row ) {
+                    return data;
+                },
+                "targets": "_all"//[0,1,2,3,4,5]
+            },
+            //{ "visible": false,  "targets": [ 4 ] }
+        ]
+
+    } );
+} );
+</script>
+
+
+
+{% endblock%}
+<body>
+{%block content %}
+
+<ul class="breadcrumb">
+  <li><a href="/">Home</a></li>
+  <li><a href="/physical/">Finished MiSeq</a></li>
+  <li class="active">Search</li>
+</ul>
+<hr>
+<!--
+<ul class="nav nav-tabs">
+  <li class=""><a href="#home" data-toggle="tab" aria-expanded="false">Full Text Search</a></li>
+  <li class="active"><a href="#profile" data-toggle="tab" aria-expanded="true">Key Word Search</a></li>
+  <li class="disabled"><a>Admin</a></li>
+  <li class="dropdown">
+    <a class="dropdown-toggle" data-toggle="dropdown" href="#" aria-expanded="false">
+      Advanced <span class="caret"></span>
+    </a>
+    <ul class="dropdown-menu">
+      <li><a href="#dropdown1" data-toggle="tab">General Search</a></li>
+      <li class="divider"></li>
+      <li><a href="#dropdown2" data-toggle="tab">Sample Search</a></li>
+    </ul>
+  </li>
+</ul>
+<div id="myTabContent" class="tab-content">
+  <div class="tab-pane fade" id="home">
+  <p></p>
+  </div>
+  <div class="tab-pane fade active in" id="profile">
+  <p></p>
+  </div>
+  <div class="tab-pane fade" id="dropdown1">
+  <p></p>
+  </div>
+  <div class="tab-pane fade" id="dropdown2">
+  <p></p>
+  </div>
+</div>
+--!>
+<table id="recent" class="display" cellspacing="0" width="90%">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Project</th>
+                <th>Creation Date</th>
+		<th>Sample</th>
+                <th>Investigators</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        <tfoot>
+            <tr>
+                <th>Title</th>
+                <th>Project</th>
+                <th>Creation Date</th>
+		<th>Sample</th>
+                <th>Investigators</th>
+                <th>Action</th>
+            </tr>
+        </tfoot>
+
+        <tbody>
+                {% for experiment in experiments %}
+                        <tr>
+                                <td><a href="{{experiment.get_absolute_url}}">{{experiment.title}}</a></td>
+                                <td>{% autoescape off %}{{experiment.get_taged_project_name}} {% endautoescape %}</td>
+                                <td>{{ experiment.get_standard_created_date }}</td>
+				<td>{{ experiment.sample_set.count }}</td>
+				<td>{% autoescape off %}{{experiment.get_taged_investigator_name}} {% endautoescape %}</td>
+				 <td>
+                                {%if experiment.created_by.NTID.upper == user.username.upper or user.username.upper in auth_users|key:experiment.experiment_id%}
+                                <a href="/virtual/get/{{experiment.experiment_id}}/#sample" type="submit" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;">Edit</a>
+                                {%endif%}
+                                <a href="/virtual/export/{{experiment.experiment_id}}/samplesheet/" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;">Download</a>
+                                </td>
+
+			</tr>
+
+                {% endfor %}
+        </tbody>
+</table>
+
+
+
+{%endblock%}
+
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{%block script %}
+    <title>MMS | Finish Experiment</title>
+
+
+    <link href="{% static "css/dj.selectable.css" %}" type="text/css" media="all" rel="stylesheet">
+
+    <script src="{% static "js/jquery.formset.js" %}"></script>
+
+    
+    <script type="text/javascript">
+    //datapicker
+    $(function() {
+    $( ".datepicker" ).datepicker({
+      changeMonth: true,
+      changeYear: true,
+      yearRange: "2000:2050",
+      // You can put more options here.
+
+      });
+    });
+    </script>
+
+    <link rel="stylesheet" href="{% static "css/new-form.css" %}" />
+
+
+{% endblock %}
+{% block content %}
+<body>
+<ul class="breadcrumb">
+  <li><a href="/">Home</a></li>
+  <li><a href="/virtual">Virtual MiSeq</a></li>
+  <li class="active">Finish Experiment</li>
+</ul>
+
+    <div>
+<form action="." method="post">
+{% csrf_token %}
+	    
+<hr>
+<div class="form-style-10" style='width:50%'>
+<h1>Finish A Experiment<span>powered by Pfizer MMS</span></h1>
+    <div class="section"><span>1</span>Request Analyze</div>
+    {{ finishform.non_field_errors }}  
+    <div class="inner-wrap">
+        <p>
+        {{finishform.finish_flag.label_tag}}
+        {{finishform.finish_flag.errors}}
+        {{finishform.finish_flag}}
+        </p>
+
+        <p>
+	{{finishform.miseq_folder_name.label_tag}}
+	{{finishform.miseq_folder_name.errors}}
+	{{finishform.miseq_folder_name}}
+	</p>
+	<p>
+        {{finishform.analyst.label_tag}}
+        {{finishform.analyst.errors}}
+        {{finishform.analyst}}
+        </p>
+	<p>
+        {{finishform.comment.label_tag}}
+        {{finishform.comment.errors}}
+        {{finishform.comment}}
+        </p>
+
+    </div>
+      <div class="button-section" align="center">
+	<hr>
+	<input type='submit' name='cancel'class="submit" value="Cancel" style="position:relative;margin-right: 50px;"/>
+	<input type="submit" name='submit' value="Submit" class="submit" />
+      </div>
+    </form>
+  </div>
+</form>
+</div>
+
+
+
+</body>
+<script type="text/javascript" src="{% static "js/jquery.dj.selectable.js" %}"></script>
+
+{% endblock %}
+</html>
+
+

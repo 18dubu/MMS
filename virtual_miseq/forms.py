@@ -8,7 +8,11 @@ from django.core.exceptions import ValidationError
 from parsley.decorators import parsleyfy
 
 import selectable.forms as selectable
+from selectable.forms import AutoCompleteWidget
+
 from .lookups import InvestigatorLookup,CellmodelLookup, ShrnaLookup, ExperimentTitleLookup, ProjectLookup
+
+from .models import IDMSUser
 
 #http://blog.brendel.com/2012/01/django-modelforms-setting-any-field.html
 class ExtendedMetaModelForm(forms.ModelForm):
@@ -56,7 +60,7 @@ class ExperimentForm(forms.ModelForm):
 	class Meta:
 		model = Experiment
 		#fields = '__all__'
-		exclude = ('experiment_id','feedback_flag','finish_flag','created_by','created_date','updated_by','updated_date','download_by','download_date','comment','design_type','finish_flag')
+		exclude = ('experiment_id','feedback_flag','finish_flag','created_by','created_date','updated_by','updated_date','download_by','download_date','comment','design_type','miseq_folder_name')
 		#fields = ('project_name','title','experiment_date','investigator','description','reads','workflow','chemistry','application','assay','version','reverse_complement',)
 		
 
@@ -102,23 +106,20 @@ class ExperimentForm(forms.ModelForm):
 		error_messages={'required':('Guy(s) who will conduct the experiment'),},
 	)
 
-	title = selectable.AutoCompleteSelectField(
-                lookup_class=ExperimentTitleLookup,
-                label='Experiment Title (Search or Add New)',
+	title = forms.CharField(
+	        widget = AutoCompleteWidget(ExperimentTitleLookup),        
+		label='Experiment Title (Search or Add New)',
                 required=True,
-		allow_new=True,
                 error_messages={'required':('How should I call you, my Experiment?'),},
         )
 	
 
-	project_name = selectable.AutoCompleteSelectField(
-                lookup_class=ProjectLookup,
+	project_name = forms.CharField(
+		widget = AutoCompleteWidget(ProjectLookup),
                 label='Project Name (Search or Add New)',
                 required=True,
-                allow_new=True,
-                error_messages={'required':('A project organizes related Experiments!'),},
+		error_messages={'required':('A project organizes related Experiments!'),},
         )
-
 
 	def __init__(self, *args, **kwargs):
         	#user = kwargs.pop('user','')
@@ -164,6 +165,15 @@ class LogForm(forms.ModelForm):
                 label='Collaborators (Type to search)',
 		required=False,
 		)
+
+class FinishForm(forms.ModelForm):
+        class Meta:
+                model = Experiment
+		fields =('finish_flag','miseq_folder_name','analyst','comment')
+	
+	analyst = forms.ModelChoiceField(queryset=IDMSUser.objects.filter(role__iexact='analyst'),required=False)
+	finish_flag = forms.ChoiceField(choices = (('Ongoing','Ongoing'),('Finished','Finished')), label="Experiment Status", widget=forms.Select(), required=True)
+
 
 	
 

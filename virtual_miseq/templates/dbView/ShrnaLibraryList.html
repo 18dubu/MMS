@@ -6,7 +6,7 @@
 <script>
 $(document).ready(function() {
     $('#sample').dataTable( {
-	"scrollX": true,
+//	"scrollX": true,
 	"pageLength": 100,
 	"columnDefs": [
             {
@@ -33,7 +33,7 @@ $(document).ready(function() {
 <div class="panel panel-primary">
   <div class="panel-heading">
     <h2 style="float:left;margin-top: 2px;margin-bottom: 0px;margin-right: 50px;">shRNA Library</h2>
-      <input type="submit" class="btn btn-default" style="position:relative;margin-right: 50px;" value="Submit Modification Request" onclick="popupwindow('/virtual/shrnalibrary/request/','',700,700)">
+      <input type="submit" class="btn btn-default" style="position:relative;margin-right: 50px;" value="Add New" onclick="popupwindow('/virtual/shrnalibrary/request/','',700,700)">
     <a href="/media/db/latest/ShrnaLibrary.xls" class="btn btn-info" style="position:relative;float:right;">Export</a>
   </div>
  </div>

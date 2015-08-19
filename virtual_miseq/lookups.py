@@ -27,19 +27,25 @@ class ProjectLookup(ModelLookup):
     model = Experiment
     search_fields = ('project_name__icontains', )
 
-#    def get_query(self, request, term):
-#        qs = super(ProjectLookup, self).get_query(request, term)
-#	return qs.values_list('project_name', flat=True).distinct()
-
     def get_item_value(self, item):
         # Display for currently selected item
         return item.project_name
 
+
+#    def get_query(self, request, term):
+#    	qs = super(ProjectLookup, self).get_query(request, term)
+#    	return qs.values_list( "project_name", flat=True).distinct()
+#
+#    def get_item_id(self, item):
+#    	return item
+
     def get_item_label(self, item):
         if item.created_by:
-		return "%s (%s)" % (item.project_name,item.created_by)
-	else:
-		return "%s (%s)" % (item.project_name,'-')
+                return u"%s (%s)" % (item.project_name,item.created_by)
+        else:
+                return u"%s (%s)" % (item.project_name,'-')
+
+
 registry.register(ProjectLookup)
 
 

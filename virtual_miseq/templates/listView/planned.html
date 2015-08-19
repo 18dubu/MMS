@@ -18,8 +18,7 @@ $(document).ready(function() {
 	"order": [[ 2, "desc" ]],
 	"pageLength": 100,
 	//"oSearch": {"sSearch": "{{g}}"},
-	"aoSearchCols": [null,{ "sSearch": "{{p}}"},null,{ "sSearch": "{{u}}"},null,null],	
-
+	"aoSearchCols": [null,{ "sSearch": "{{p}}"},null,null,{ "sSearch": "{{u}}"},null],	
 	"columnDefs": [
             {
                 // The `data` parameter refers to the data for the cell (defined by the
@@ -38,20 +37,6 @@ $(document).ready(function() {
 } );
 </script>
 
-<script type="text/javascript">
-    $(document).ready(function(){
-    //Check if the current URL contains '#'
-    if(document.URL.indexOf("#")==-1){
-        // Set the URL to whatever it was plus "#".
-        url = document.URL+"#";
-        location = "#";
-
-        //Reload the page
-        location.reload(true);
-    }
-});
-</script>
-
 
 
 {% endblock%}
@@ -61,7 +46,7 @@ $(document).ready(function() {
 <ul class="breadcrumb">
   <li><a href="/">Home</a></li>
   <li><a href="/virtual">Virtual MiSeq</a></li>
-  <li class="active">Create New Experiment</li>
+  <li class="active">Search</li>
 </ul>
 <hr>
 <!--

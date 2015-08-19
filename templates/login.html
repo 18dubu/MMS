@@ -17,7 +17,7 @@
             <h1>LOG IN</h1>
          <form action="/accounts/login/" method="post">{% csrf_token %}
 	    <div><p><font color="red"><strong>{{ntid_error}}</strong></font></p></div>
-	    <input type="text" name="username" value="{{NTID}}" id="username" placeholder="User Name (Pfizer NTID)">
+	    <input type="text" name="username" value="{{NTID}}" id="username" placeholder="User Name (NTID without domain)">
 	    <div><font color="red"><strong>{{passwd_error}}</strong></font></div>
 	    <input type="password" name="password" value="" id="password" placeholder="Pfizer Password">
 	    <div><font color="red"><strong>{{validate_error}}</strong></font></div>

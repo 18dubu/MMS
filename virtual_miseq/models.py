@@ -10,6 +10,8 @@ from django.utils import timezone
 
 USER_PRIVILEGE_CHOICE=(('s','s'),('i','i'),('a','a'),('b','b'),('c','c'),('f','f'),('g','g'),('o','o'),('x','x'),('y','y'),('z','z'))
 
+ROLE_CHOICE = (('analyst','analyst'),('supervisor','supervisor'))
+
 SAMPLE_REPLICATE_CHOICE = zip(list(string.ascii_uppercase),list(string.ascii_uppercase))
 
 DISEASE_AREA_CHOICE = [('oncology','oncology')]
@@ -77,31 +79,35 @@ class Treatment(models.Model):
 
 class IDMSUser(models.Model):
         UserID = models.IntegerField("User ID",default=0)
-        Username =  models.CharField("User Name",max_length=255,default='')
-        Password =  models.CharField("Password",max_length=32,default='')
+        Username =  models.CharField("User Name",max_length=255,default='',blank=True)
+        Password =  models.CharField("Password",max_length=32,default='',blank=True)
         EmailAddress =  models.EmailField("Email Address",max_length=255,default='')
         FirstName = models.CharField("First Name",max_length=65,default='')
         LastName = models.CharField("Last Name",max_length=65,default='')
-        Phone = models.CharField("Phone",max_length=20,default='')
+        Phone = models.CharField("Phone",max_length=20,default='',blank=True)
         Privilege = models.CharField("Privilege",
                                 choices=USER_PRIVILEGE_CHOICE,
                                 max_length=10,
                                 default='c')
         ValidationStatus = models.CharField("Validation Status",max_length=30, default='pending')
-        AuthenticationString = models.CharField("Authentication String",max_length=20,default='')
-        user_group =  models.CharField("User Group",max_length=30,default='')
+        AuthenticationString = models.CharField("Authentication String",max_length=20,default='',blank=True)
+        user_group =  models.CharField("User Group",max_length=30,default='',blank=True)
         Organization =  models.CharField("Organization",max_length=45,default='Oncology Research')
-        Billingaddress =  models.CharField("Billing Address",max_length=150,null=True)
-        Billingcity =  models.CharField("Billing City",max_length=100,null=True)
-        Billingstate = models.CharField("Billing State",max_length=20,null=True)
-        Billingzip = models.IntegerField("Billin ZIP",null=True)
-        Shippingaddress = models.CharField("Shipping Adress",max_length=150,null=True)
-        Shippingbuilding = models.CharField("Shipping Building",max_length=100,null=True)
-        Shippingroom = models.CharField("Shipping Room",max_length=45,null=True)
-        Shippingcity = models.CharField("Shipping City",max_length=100,null=True)
-        Shippingstate =  models.CharField("Shipping State",max_length=20,null=True)
-        Shippingzip = models.IntegerField("Shipping ZIP",null=True)
-        NTID =  models.CharField("NTID",max_length=20,null=True)
+        Billingaddress =  models.CharField("Billing Address",max_length=150,null=True,blank=True)
+        Billingcity =  models.CharField("Billing City",max_length=100,null=True,blank=True)
+        Billingstate = models.CharField("Billing State",max_length=20,null=True,blank=True)
+        Billingzip = models.IntegerField("Billin ZIP",null=True,blank=True)
+        Shippingaddress = models.CharField("Shipping Adress",max_length=150,null=True,blank=True)
+        Shippingbuilding = models.CharField("Shipping Building",max_length=100,null=True,blank=True)
+        Shippingroom = models.CharField("Shipping Room",max_length=45,null=True,blank=True)
+        Shippingcity = models.CharField("Shipping City",max_length=100,null=True,blank=True)
+        Shippingstate =  models.CharField("Shipping State",max_length=20,null=True,blank=True)
+        Shippingzip = models.IntegerField("Shipping ZIP",null=True,blank=True)
+        NTID =  models.CharField("NTID",max_length=20,null=True,blank=True)
+	role = models.CharField(
+                                choices=ROLE_CHOICE,
+                                max_length=10,
+                                null=True,blank=True)
 
 	approvalStatus = models.BooleanField(blank=True,
                 choices = (
@@ -288,7 +294,7 @@ class Project(models.Model):
 class Experiment(models.Model):
 	#input-required
         experiment_id = models.CharField(max_length=200,blank=True, unique=True,default=uuid.uuid4)
-	project_name =  models.CharField(max_length=200,default='')# models.ForeignKey(Project,related_name='experiments')#models.CharField(max_length=200,default='')
+	project_name =  models.CharField(max_length=200)# models.ForeignKey(Project,related_name='experiments')#models.CharField(max_length=200,default='')
 	title = models.CharField(max_length=200)
         description = models.TextField()
         experiment_date = models.DateTimeField('Date of experiment')
@@ -318,8 +324,11 @@ class Experiment(models.Model):
         )
 
 			#models.NullBooleanField(blank=True,null=True)
-	comment =  models.CharField(max_length=200,blank=True,null=True)
-
+	comment =  models.TextField(blank=True,null=True)
+	#finish exp
+	miseq_folder_name = models.CharField(max_length=200,blank=True,null=True)
+	result_folder = models.CharField(max_length=200,blank=True,null=True)
+	analyst =  models.ForeignKey(IDMSUser,blank=True,null=True,related_name='analyzing_exp')	
 	#automatic-generated
 	created_by = models.ForeignKey(IDMSUser,blank=True,null=True,related_name='exp_created_by')
 	created_date = models.DateTimeField("Created Date",default=timezone.now,blank=True)
@@ -332,7 +341,12 @@ class Experiment(models.Model):
                         choices = (
                         ("Finished", "Finished"),
                         ("Ongoing", "Ongoing"),
-                        ("Terminated","Terminated")
+                        ("Terminated","Terminated"),
+			("Submitted","Submitted"),
+			("Analyzing","Analyzing"),
+			("Rejected","Rejected"),
+			("Returned","Returned"),
+			("Closed","Closed"),
                 ),
 		default="Ongoing",
         )
@@ -400,6 +414,17 @@ class Experiment(models.Model):
 
         def __unicode__(self):
                 return smart_unicode(self.title)
+
+
+
+
+class Finished_Miseq(models.Model):
+        #input-required
+	virtual_id = models.CharField(max_length=200,blank=True)
+        miseq_id = models.CharField(max_length=200,blank=True)
+
+
+
 
 class Sample(models.Model):
 	#user input
@@ -525,6 +550,8 @@ class Log(models.Model):
 
     def __unicode__(self):
             return unicode(self.subject)
+
+
 
 
 

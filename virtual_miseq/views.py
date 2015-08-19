@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from .models import Experiment, Sample, Log, IDMSUser,MiseqIndex,PoolNumberChoice,Treatment,CcleLibrary,ShrnaLibrary, Project
-from forms import ExperimentForm, SampleForm, SampleFormSet, SampleFormSet0, SampleSheetImportForm, LogForm
+from forms import ExperimentForm, SampleForm, SampleFormSet, SampleFormSet0, SampleSheetImportForm, LogForm,FinishForm
 
 from django.views.generic import ListView
 from django.shortcuts import render, render_to_response, get_object_or_404
@@ -9,7 +9,9 @@ from django.template import RequestContext, loader
 from django.template.defaulttags import register
 from django.utils import timezone
 from django.core.context_processors import csrf
+from django.core.mail import send_mail
 from django.core.exceptions import ValidationError
+from django.core.exceptions import PermissionDenied
 from django_datatables_view.base_datatable_view import BaseDatatableView
 from django.forms.models import model_to_dict
 from django.db.models import Q
@@ -42,37 +44,37 @@ def get_alert(experiment):
 	overdue_template = "<div class=\"alert alert-dismissible alert-danger\">\
 			  <button type=\"button\" class=\"close\" data-dismiss=\"alert\">×</button>\
 			  <h4>This Experiment is Overdue!</h4>\
-			  <p>If it has been conducted, you can <a href=\"/TODO/\" class=\"alert-link\">change its status to \"finished\"</a>.</p>\
+			  <p>If it has been conducted, you can <a href=\"/virtual/finish/%s/\" class=\"alert-link\">change its status to \"finished\"</a>.</p>\
 			</div>"
 
 	finish_template = "\
 			<div class=\"alert alert-dismissible alert-success\">\
                         <button type=\"button\" class=\"close\" data-dismiss=\"alert\">×</button>\
 			<h4>This Experiment is marked as finished!</h4>\
-			 <p>If you haven't requested analysis, you can <a href=\"/TODO/\" class=\"alert-link\">Request now</a>. Otherwise, if the status is not correct, you can <a href=\"/TODO/\" class=\"alert-link\">edit the status</a>.</p>\
+			 <p>If the status is not correct, you can <a href=\"/virtual/finish/%s/\" class=\"alert-link\">edit the status</a>.</p>\
 			</div>"
 
 	upcoming_template = "\
                         <div class=\"alert alert-dismissible alert-warning\">\
                         <button type=\"button\" class=\"close\" data-dismiss=\"alert\">×</button>\
 			<h4>This Experiment is due in the coming days!</h4>\
-                        <p>If it has been conducted, you can <a href=\"/TODO/\" class=\"alert-link\">change its status to \"finished\"</a>.</p>\
-                        <p>Otherwise, you can <a href=\"/TODO/\" class=\"alert-link\">edit the experiment</a>.</p>\
+                        <p>If it has been conducted, you can <a href=\"/virtual/finish/%s/\" class=\"alert-link\">change its status to \"finished\"</a>.</p>\
+                        <p>Otherwise, you can <a href=\"/virtual/edit/%s/\" class=\"alert-link\">edit the experiment</a>.</p>\
                         </div>"
 
 
 	#overdue
 	now = timezone.make_aware(datetime.now(), timezone.get_default_timezone())
-	if exp.experiment_date < now and exp.finish_flag != 'Finished':
-		alert = overdue_template
+	if exp.experiment_date < now and exp.finish_flag != 'Finished' and exp.finish_flag != "Submitted" and exp.finish_flag != "Analyzing":
+		alert = overdue_template % exp.experiment_id.decode('utf-8').encode('utf-8')
 	#finished
-	if exp.finish_flag == 'Finished':
-		alert = finish_template
+	if exp.finish_flag == 'Finished' or exp.finish_flag == "Submitted" or exp.finish_flag == "Analyzing":
+		alert = finish_template % (exp.experiment_id.decode('utf-8').encode('utf-8'))
 	#upcoming
-	if exp.finish_flag != 'Finished' and exp.experiment_date > now:
+	if exp.finish_flag != 'Finished'and exp.finish_flag != "Submitted" and exp.finish_flag != "Analyzing" and exp.experiment_date > now:
 		delta = exp.experiment_date - now
 		if delta.days < 2: # due in two days
-			alert = upcoming_template
+			alert = upcoming_template % (exp.experiment_id.decode('utf-8').encode('utf-8'),exp.experiment_id.decode('utf-8').encode('utf-8'))
 	#analysis
 	#TODO
 
@@ -86,7 +88,7 @@ def get_auth_users(experiments):
                         curr.append(i.NTID.upper())
 		#append admin to all experiments
 		curr.append('ADMIN')
-		
+		curr.append(e.created_by.NTID.upper())
                 auth_users[e.experiment_id] = curr
 
 	return auth_users
@@ -127,7 +129,7 @@ def get_dashboard_data(experiments):
 		now = timezone.make_aware(datetime.now(), timezone.get_default_timezone())
 			
 		#finish list
-		if exp.finish_flag == 'Finished' and j<=limit:
+		if exp.finish_flag == 'Submitted' and j<=limit:
                         j+=1
                         if exp.feedback_flag == 'Negative':
                                 info = "<small class=\"label label-danger\"><i class=\"fa ion-flag\"></i> Negative </small>"
@@ -141,7 +143,7 @@ def get_dashboard_data(experiments):
                         finish += tmp1
 
 		#todo list
-		if exp.experiment_date > now:
+		if exp.experiment_date > now and exp.finish_flag != 'Submitted':
 			delta = exp.experiment_date - now
 			k+=1		
 			if delta.days < 2: #two days
@@ -165,7 +167,7 @@ def get_dashboard_data(experiments):
 				todo += tmp2
 		#calendar
 		else:
-			if exp.finish_flag == 'Finished':
+			if exp.finish_flag == 'Submitted':
 				i= 5
 			else:
 				i= 0
@@ -217,7 +219,7 @@ def get_finished_list_html(experiments):
 
 ###############################################################
 
-def datatable(request):
+def planned(request):
 	experiments = Experiment.objects.all()
 
 	args = {}
@@ -228,18 +230,20 @@ def datatable(request):
         args['user'] = request.user
         args['auth_users'] = get_auth_users(experiments)
 
-	return render_to_response('listView/datatable.html', args)
+	return render_to_response('listView/planned.html', args)
 
 
 def physical_search(request):
         experiments = Experiment.objects.all()
         args = {}
         args.update(csrf(request))
+        args['p'] = request.GET.get('p', '')
+        args['u'] = request.GET.get('u', '')
         args['user'] = request.user
         args['experiments'] = experiments
         args['auth_users'] = get_auth_users(experiments)
 
-        return render_to_response('listView/datatable.html', args)
+        return render_to_response('listView/finished.html', args)
 
 
 '''
@@ -356,7 +360,12 @@ def new_exp(request, experiment_id=None):
 		shrna = 'shON'
                 if not sample.shRNA_on:
                         shrna = 'shOFF'
-		sample_name = '.'.join([sample_name,shrna,''.join(['T',str(sample.time_in_days)]),sample.replicate])
+
+		time = ''.join(['T',str(sample.time_in_days)])
+		if sample.environment == 'inVivo':
+			time = 'inVivo'
+
+		sample_name = '.'.join([sample_name,shrna,sample.environment,sample.replicate])
 		
                 if sample.other_tag:
                         sample_name = sample_name + '.' + sample.other_tag
@@ -433,11 +442,13 @@ def new_exp2(request, mode, experiment_id=None):
 				try:
 					new_exp.created_by = IDMSUser.objects.get(NTID__iexact=request.user.username)
                       		except:
-					raise("can not find"+request.user.username+'in IDMS db error')
+					raise Exception("can not find"+request.user.username+'in IDMS db error')
 				new_exp.save()
                                	expform.save_m2m()
                                 #sample forms
 				return HttpResponseRedirect('/virtual/get/%s/' % new_exp.experiment_id)
+			else:
+				raise Exception('Form not valid')
 		elif 'delete_exp' in request.POST:
 			if experiment_id is not None:
                         	exp2delete = get_object_or_404(Experiment, experiment_id=experiment.experiment_id).delete()
@@ -459,6 +470,51 @@ def new_exp2(request, mode, experiment_id=None):
 	args['mode'] = mode
 	args['user'] = request.user
         return render_to_response('newExpView/new2.html',args)
+
+
+@login_required
+def finish_exp(request, experiment_id=None):
+        if experiment_id:
+                experiment = get_object_or_404(Experiment, experiment_id=experiment_id)
+		if  request.user.username.upper() in get_auth_users([experiment])[experiment_id]:
+			if request.POST:
+				if 'submit' in request.POST:
+					finishform = FinishForm(request.POST, instance=experiment)	
+					if finishform.is_valid():
+		                                new_exp = finishform.save(commit=False)
+		                                new_exp.finish_flag = new_exp.finish_flag
+						new_exp.save()
+						#send email
+						if new_exp.finish_flag=='Finished' and new_exp.miseq_folder_name and new_exp.analyst:
+
+							#try:
+								
+							send_mail('MMS Request Analysis', ' '.join([experiment_id,new_exp.miseq_folder_name]), request.user.username,['handong.ma@pfizer.com'], fail_silently=False)
+							return HttpResponseRedirect('/virtual/new/confirm/%s/' % new_exp.experiment_id)								
+							#except:
+							#	raise Exception('Send email error')
+		
+	                                	return HttpResponseRedirect('/virtual/get/%s/' % new_exp.experiment_id)
+
+
+				
+				elif 'cancel' in request.POST:
+                        		return HttpResponseRedirect('/virtual/get/%s/' % experiment.experiment_id)
+			else:
+				finishform = FinishForm(instance=experiment)
+		else:
+			raise PermissionDenied()
+        else:
+                return HttpResponseRedirect('/1')
+
+
+        args = {}
+        args.update(csrf(request))
+	args['experiment'] = experiment
+        args['finishform'] = finishform
+        args['user'] = request.user
+        return render_to_response('detailView/finish.html',args)
+
 
 
 def add_edit_sample(request,experiment_id, mode,sample_id=None):
@@ -491,7 +547,12 @@ def add_edit_sample(request,experiment_id, mode,sample_id=None):
                 shrna = 'shON'
                 if not sample.shRNA_on:
                         shrna = 'shOFF'
-                sample_name = '.'.join([sample_name,shrna,''.join(['T',str(sample.time_in_days)]),sample.replicate])
+
+        	time = ''.join(['T',str(sample.time_in_days)])
+                if sample.environment == 'inVivo':
+                        time = 'inVivo'
+
+	        sample_name = '.'.join([sample_name,shrna,time,sample.replicate])
 
                 if sample.other_tag:
                         sample_name = sample_name + '.' + sample.other_tag
@@ -500,9 +561,9 @@ def add_edit_sample(request,experiment_id, mode,sample_id=None):
 	experiment = get_object_or_404(Experiment, experiment_id=experiment_id)	
 	title=''
 	if request.POST:
-		if request.POST.get('delete_sam', None):
-			return HttpResponse('<script type="text/javascript">location.reload();</script>')
-		
+		if request.POST.get('cancel_sam', None):
+			return HttpResponse('<script type="text/javascript">window.close();window.opener.location.reload(true);</script>')	
+
 		samforms = SampleFormSet(request.POST,instance=experiment)	
 		
 		if samforms.is_valid():
@@ -555,7 +616,7 @@ def add_edit_sample(request,experiment_id, mode,sample_id=None):
 				targetSam = get_object_or_404(experiment.sample_set.all(),pk=sample_id)
                         	samforms = SampleFormSet0(instance=experiment, queryset=Sample.objects.filter(id=sample_id))
 		else:
-			raise('Unknow URL parameter')
+			raise Exception('Unknow URL parameter')
 
         args = {}
         args.update(csrf(request))
@@ -705,7 +766,8 @@ def signup(request):
 @login_required
 def console(request):
 	
-	experiments = Experiment.objects.filter(Q(investigator__NTID__iexact=request.user.username) | Q(created_by__NTID__iexact=request.user.username)).order_by('experiment_date')
+	experiments = Experiment.objects.filter(Q(investigator__NTID__iexact=request.user.username) | Q(created_by__NTID__iexact=request.user.username)).distinct().order_by('experiment_date')
+	
 	idms = IDMSUser.objects.get(NTID__iexact=request.user.username)	
         posts = Log.objects.filter(created_by__NTID__iexact=request.user.username).order_by('-created_date')
 	
@@ -772,13 +834,13 @@ def new_edit_log(request, mode, experiment_id=None):
                                 logform.save_m2m()
                                 #sample forms
 
-                                return HttpResponseRedirect('/virtual/new/confirm/%s/' % experiment.experiment_id)
+                                return HttpResponseRedirect('/virtual/get/%s/' % experiment.experiment_id)
 
                 elif 'delete_log' in request.POST:
                         if experiment_id is not None:
 				if experiment_id:
                                 	log2delete = get_object_or_404(Log, related_exp=experiment).delete()
-                                	return HttpResponseRedirect('/virtual/delete/confirm/%s/' % experiment.experiment_id)
+					return HttpResponseRedirect('/virtual/get/%s/' % experiment.experiment_id)
                         else:
                                 return HttpResponseRedirect('/')
                 elif 'cancel_log' in request.POST:
@@ -792,7 +854,7 @@ def new_edit_log(request, mode, experiment_id=None):
         args['logform'] = logform
         args['mode'] = mode
         args['user'] = request.user
-        return render_to_response('consoleView/logNew.html',args)
+        return render_to_response('newExpView/log.html',args)
 
 
 

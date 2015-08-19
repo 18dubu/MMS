@@ -62,6 +62,17 @@
 });
 </script>
 
+<script type="text/javascript" src="{% static "js/jquery.dj.selectable.js" %}"></script>
+<script>
+function close_window() {
+  if (confirm("Cancel? This Sample Will Not be Saved!")) {
+        close();
+  }
+}
+
+}
+</script>
+
 {% endblock %}
 {% block content %}
 <body>
@@ -103,16 +114,6 @@
 
 
 </body>
-<script type="text/javascript" src="{% static "js/jquery.dj.selectable.js" %}"></script>
-<script>
-function close_window() {
-  if (confirm("Cancel? This Sample Will Not be Saved!")) {
-	close();
-  }
-}
-
-}
-</script>
 {% endblock %}
 </html>
 

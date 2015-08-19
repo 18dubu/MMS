@@ -46,9 +46,6 @@ function popupwindow(url, title, w, h) {
 
 {{alert|safe}}
 
-
-
-
 <ul class="nav nav-tabs">
   <li class="active"><a href="#home" data-toggle="tab" >Experiments</a></li>
   <li class=""><a href="#logs" data-toggle="tab" >Logs</a></li>
@@ -57,12 +54,12 @@ function popupwindow(url, title, w, h) {
     <a class="dropdown-toggle" data-toggle="dropdown" href="#">
       Actions <span class="caret"></span>
     </a>
-    <ul class="dropdown-menu">
-      <li><a href="/virtual/export/{{experiment.experiment_id}}/samplesheet/" target="_blank" data-toggle="tab">Generate SampleSheet</a></li>
+    <ul class="dropdown-menu" id='action'>
+      <li><a href="/virtual/export/{{experiment.experiment_id}}/samplesheet/" target="_blank">Generate SampleSheet</a></li>
       <li class="divider"></li>
-      <li><a href="/virtual/export/{{experiment.experiment_id}}/log/" target="_blank" data-toggle="tab">Download Logs</a></li>
+      <li><a href="/virtual/export/{{experiment.experiment_id}}/log/" target="_blank">Download Logs</a></li>
       <li class="divider"></li>
-      <li><a href="/virtual/import/{{experiment.experiment_id}}" target="_blank" data-toggle="tab">Import SampleSheet (Beta)</a></li>
+      <li><a href="/virtual/import/{{experiment.experiment_id}}" target="_blank">Import SampleSheet (Beta)</a></li>
     </ul>
   </li>
 
@@ -86,6 +83,7 @@ function popupwindow(url, title, w, h) {
 	    <h2 style="float:left;margin-top: 2px;margin-bottom: 0px;margin-right: 20px;">Experiment  </h2>
 	{%if experiment.created_by.NTID.upper == user.username.upper or user.username.upper in auth_users|key:experiment.experiment_id%}
 	    <a href="/virtual/edit/{{experiment.experiment_id}}/" class="btn btn-default" style="position:relative;margin-right: 20px;">Edit</a>
+	    <a href="/virtual/finish/{{experiment.experiment_id}}" class="btn btn-default" style="position:relative;margin-right: 20px;">Request Analysis</a>
 	    <a href="/virtual/import/{{experiment.experiment_id}}" class="btn btn-default" style="position:relative;margin-right: 20px;">Import SampleSheet</a>
 	{%endif%}
 	    <a href="/virtual/export/{{experiment.experiment_id}}/samplesheet/" class="btn btn-default" style="position:relative;margin-right: 20px;">Generate SampleSheet</a>
@@ -106,6 +104,15 @@ function popupwindow(url, title, w, h) {
 		<div class="well" style="margin-bottom: 2px;padding:5px;"><strong>Reads: </strong> {{experiment.reads}}</div>
 		<div class="well" style="margin-bottom: 2px;padding:5px;"><strong>ReverseComplement: </strong> {{experiment.reverse_complement}}</div>
 	  </div>
+	  <div class="panel-body">
+                <div class="well" style="margin-bottom: 2px;padding:5px;"><strong>Created By:  </strong> {{experiment.created_by}}</div>
+                <div class="well" style="margin-bottom: 2px;padding:5px;"><strong>Created Date: </strong> {{experiment.created_date}}</div>
+        	{% if experiment.updated_by.id %}        
+		<div class="well" style="margin-bottom: 2px;padding:5px;"><strong>Last Updated By: </strong> {{experiment.updated_by}}</div>
+		<div class="well" style="margin-bottom: 2px;padding:5px;"><strong>Last Updated Date: </strong> {{experiment.updated_date}}</div>
+		{% endif %}
+	
+	</div>
 
 <hr>
 
@@ -127,10 +134,13 @@ function popupwindow(url, title, w, h) {
                 <th>I7_Index_ID</th>
                 <th>index</th>
 		<th>shRNA</th>
+		<th>Cell Culture</th>
 		<th>Time (days)</th>
 		<th>Replicate</th>
 		<th>Treatment(dose)</th>
-		<th>Actions</th>
+		<th>Other Tag</th>
+		<th>Comment</th>
+                <th>Actions</th>
             </tr>
         </thead>
 
@@ -147,9 +157,12 @@ function popupwindow(url, title, w, h) {
 		<td>{{sample.index.I7_Index_ID}}</td>
                 <td>{{sample.index.index}}</td>
                 <td>{{sample.get_shRNA_on_display}}</td>
+		<td>{{sample.environment}}</td>
 		<td>{{sample.time_in_days}}</td>
                 <td>{{sample.replicate}}</td>
 		<td>{{sample.get_treatment_dosage_display}}</td>
+		<td>{{sample.other_tag}}</td>
+                <td>{{sample.comment}}</td>
 		<td>
 		{% csrf_token %}
 
@@ -184,7 +197,7 @@ function popupwindow(url, title, w, h) {
 
 	<a href="/virtual/export/{{experiment.experiment_id}}/samplesheet/" class="btn btn-primary" style="position:relative;">Generate SampleSheet</a>
 	</div>
-
+<hr>
   </div>
 <hr>
 
@@ -265,23 +278,45 @@ function popupwindow(url, title, w, h) {
             <h3>Analysis</h3>
           </div>
         </div>
+
+	{% if experiment.finish_flag == "Submitted" %}
+          <div class="panel-body" style="width: 95%;margin-left:auto;margin-right:auto;">
+             <div class="well well-sm" style="margin-bottom: 2px;"><strong>The Experiment Is Submitted For Analysis! Please Waiting For Response!
+             </div>
+	  </div>
+        {% endif%}
+
+	
         {% if experiment.finish_flag == "Finished" %}
-
-        <div class="container"  >
-          <div class="row">
-            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-
-            </div>
+          <div class="panel-body" style="width: 95%;margin-left:auto;margin-right:auto;">
+           <div class="well well-sm" style="margin-bottom: 2px;"><strong>The Experiment Is Marked As "Finished" Now! If Provided With The MiSeq Output Folder, The Experiment Is submitted For Analysis!</a>
+	  </div>
         </div>
-    </div>
+        {% endif%}
 
-    <hr>
 
-        {% else %}
+        {% if experiment.finish_flag == "Returned" %}
+          <div class="panel-body" style="width: 95%;margin-left:auto;margin-right:auto;">
+            <div class="well well-sm" style="margin-bottom: 2px;"><strong>The Analysis is Finished! You Can View The Result <a href={{experiment.result_folder}}'> Here</a>
+            </div>
+	  </div>
+        {% endif%}
+
+
+        {% if experiment.finish_flag == "Terminated" %}
+          <div class="panel-body" style="width: 95%;margin-left:auto;margin-right:auto;">
+                <div class="well well-sm" style="margin-bottom: 2px;"><strong>The Experiment Is Terminated!
+                </div>
+
+	  </div>
+        {% endif%}
+
+
+        {% if experiment.finish_flag == "Ongoing" %}
           <div class="panel-body" style="width: 95%;margin-left:auto;margin-right:auto;">
           <div class="well well-sm" style="margin-bottom: 2px;"><strong>The Experiment Is Marked As "Ongoing" Now!
            {%if experiment.created_by.NTID.upper == user.username.upper or user.username.upper in auth_users|key:experiment.experiment_id%}
-                <a href="/virtual/get/{{experiment.experiment_id}}/log/new/">Change It To "Finish" and Submit For Analysis!</a>
+                <a href="/virtual/finish/{{experiment.experiment_id}}/">Change It To "Finished" and Submit For Analysis!</a>
            {%endif%}
           </div>
         </div>
