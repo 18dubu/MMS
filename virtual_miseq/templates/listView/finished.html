@@ -14,7 +14,23 @@ $.extend( $.fn.dataTable.defaults, {
 } );
 
 $(document).ready(function() {
+
+    //hide empty columns
+    $('#recent tr th').each(function(i) {
+     //select all tds in this column
+     var tds = $(this).parents('table')
+              .find('tr td:nth-child(' + (i + 1) + ')');
+        //check if all the cells in this column are empty
+        if(tds.length == tds.filter(':empty').length) {
+            //hide header
+            $(this).hide();
+            //hide cells
+            tds.hide();
+        }
+    });
+
     $('#recent').dataTable( {
+	"scrollX": true,
 	"order": [[ 2, "desc" ]],
 	"pageLength": 100,
 	//"oSearch": {"sSearch": "{{g}}"},
@@ -84,41 +100,61 @@ $(document).ready(function() {
 <table id="recent" class="display" cellspacing="0" width="90%">
         <thead>
             <tr>
-                <th>Title</th>
-                <th>Project</th>
-                <th>Creation Date</th>
-		<th>Sample</th>
-                <th>Investigators</th>
-                <th>Action</th>
-            </tr>
-        </thead>
+                <th>virtual_id</th>
+                <th>miSeqId</th>
+                <th>analysisId</th>
+		<th>InvestigatorName</th>
+                <th>Date</th>
+                <th>ProjectName</th>
+                <th>ExperimentName</th>
+                <th>refLib</th>
+                <th>Sample_ID</th>
+                <th>Sample_Name</th>
+                <th>group</th>
+                <th>I7_Index_ID</th>
+		<th>index</th>
+                <th>IEMFileVersion</th>
+                <th>Workflow</th>
+                <th>Application</th>
+                <th>Assay</th>
+                <th>Description</th>
+		<th>Chemistry</th>
+                <th>CustomRead1PrimerMix</th>
+                <th>Adapter</th>
+                <th>ReverseComplement</th>
+                <th>AdapterRead2</th>
+                <th>refLib.ori</th>
 
-        <tfoot>
-            <tr>
-                <th>Title</th>
-                <th>Project</th>
-                <th>Creation Date</th>
-		<th>Sample</th>
-                <th>Investigators</th>
-                <th>Action</th>
-            </tr>
-        </tfoot>
+	    </tr>
+        </thead>
 
         <tbody>
                 {% for experiment in experiments %}
                         <tr>
-                                <td><a href="{{experiment.get_absolute_url}}">{{experiment.title}}</a></td>
-                                <td>{% autoescape off %}{{experiment.get_taged_project_name}} {% endautoescape %}</td>
-                                <td>{{ experiment.get_standard_created_date }}</td>
-				<td>{{ experiment.sample_set.count }}</td>
-				<td>{% autoescape off %}{{experiment.get_taged_investigator_name}} {% endautoescape %}</td>
-				 <td>
-                                {%if experiment.created_by.NTID.upper == user.username.upper or user.username.upper in auth_users|key:experiment.experiment_id%}
-                                <a href="/virtual/get/{{experiment.experiment_id}}/#sample" type="submit" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;">Edit</a>
-                                {%endif%}
-                                <a href="/virtual/export/{{experiment.experiment_id}}/samplesheet/" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;">Download</a>
-                                </td>
-
+				<td>{{experiment.virtual_id}}</td>
+                                <td>{{experiment.miSeqId}}</td>
+                                <td>{{experiment.analysisId}}</td>
+                                <td>{{experiment.InvestigatorName}}</td>
+                                <td>{{experiment.Date}}</td>
+                                <td>{{experiment.ProjectName}}</td>
+                                <td>{{experiment.ExperimentName}}</td>
+                                <td>{{experiment.refLib}}</td>
+                                <td>{{experiment.Sample_ID}}</td>
+                                <td>{{experiment.Sample_Name}}</td>
+                                <td>{{experiment.group}}</td>
+                                <td>{{experiment.I7_Index_ID}}</td>
+                                <td>{{experiment.index}}</td>
+                                <td>{{experiment.IEMFileVersion}}</td>
+                                <td>{{experiment.Workflow}}</td>
+                                <td>{{experiment.Application}}</td>
+                                <td>{{experiment.Assay}}</td>
+                                <td>{{experiment.Description}}</td>
+                                <td>{{experiment.Chemistry}}</td>
+                                <td>{{experiment.CustomRead1PrimerMix}}</td>
+                                <td>{{experiment.Adapter}}</td>
+                                <td>{{experiment.ReverseComplement}}</td>
+                                <td>{{experiment.AdapterRead2}}</td>
+                                <td>{{experiment.refLib.ori}}</td>
 			</tr>
 
                 {% endfor %}

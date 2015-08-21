@@ -418,11 +418,37 @@ class Experiment(models.Model):
 
 
 
-class Finished_Miseq(models.Model):
+class FinishedMiseq(models.Model):
         #input-required
 	virtual_id = models.CharField(max_length=200,blank=True)
-        miseq_id = models.CharField(max_length=200,blank=True)
+        miSeqId = models.CharField(max_length=200,blank=True)
+	analysisId = models.CharField(max_length=200,blank=True,null=True)
+	InvestigatorName  = models.CharField(max_length=200,blank=True,null=True)
+	Date = models.CharField(max_length=200,blank=True,null=True)
+	ProjectName = models.CharField(max_length=200,blank=True,null=True)
+	ExperimentName = models.CharField(max_length=200,blank=True,null=True)
+	refLib = models.CharField(max_length=200,blank=True,null=True)
+	Sample_ID = models.CharField(max_length=200,blank=True,null=True)
+	Sample_Name = models.CharField(max_length=200,blank=True,null=True)
+	group = models.CharField(max_length=200,blank=True,null=True)
+	I7_Index_ID = models.CharField(max_length=200,blank=True,null=True)
+	index = models.CharField(max_length=200,blank=True,null=True)
+	IEMFileVersion  = models.IntegerField(blank=True,null=True)
+	Workflow = models.CharField(max_length=200,blank=True,null=True)
+	Application = models.CharField(max_length=200,blank=True,null=True)
+	Assay = models.CharField(max_length=200,blank=True,null=True)
+	Description = models.CharField(max_length=200,blank=True,null=True)
+	Chemistry = models.CharField(max_length=200,blank=True,null=True)
+	CustomRead1PrimerMix = models.CharField(max_length=200,blank=True,null=True)
+	Adapter = models.CharField(max_length=200,blank=True,null=True)
+	ReverseComplement = models.IntegerField(blank=True,null=True)
+	AdapterRead2 = models.CharField(max_length=200,blank=True,null=True)
+	refLib.ori = models.CharField(max_length=200,blank=True,null=True)
 
+
+        def __unicode__(self):
+
+                return unicode(self.miSeqId)
 
 
 

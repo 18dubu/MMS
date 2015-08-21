@@ -14,6 +14,12 @@ from .lookups import InvestigatorLookup,CellmodelLookup, ShrnaLookup, Experiment
 
 from .models import IDMSUser
 
+
+from functools import partial, wraps
+from django.forms.formsets import formset_factory
+
+
+
 #http://blog.brendel.com/2012/01/django-modelforms-setting-any-field.html
 class ExtendedMetaModelForm(forms.ModelForm):
     """
@@ -178,6 +184,7 @@ class FinishForm(forms.ModelForm):
 	
 
 class SampleForm(forms.ModelForm):
+	
 	class Meta:
 		model = Sample
 		#fields=('index','cell_model','shRNA_library','shRNA_on','time_in_days','treatment','treatment_dose','replicate','other_tag','comment',)
@@ -216,12 +223,11 @@ class SampleForm(forms.ModelForm):
         	required=True,
 		error_messages = {'required': ("Required"),},
     	)
-
+	
 	def __init__(self, *args, **kwargs):
-        	super(SampleForm, self).__init__(*args, **kwargs)
+       		self.sample_id = kwargs.pop('sample_id',None)
+	 	super(SampleForm, self).__init__(*args, **kwargs)
         	self.fields['shRNA_on'].required = True
-
-
 
         def clean(self):
 		cleaned_data = super(SampleForm, self).clean()	
@@ -239,9 +245,9 @@ class SampleForm(forms.ModelForm):
 		other_tag = cleaned_data.get('other_tag')
 		                
 
-		if self.instance.experiment.sample_set.filter(cell_model=cell_model,shRNA_library=shRNA_library,time_in_days=time_in_days,treatment=treatment,treatment_dose=treatment_dose,shRNA_on=shRNA_on,other_tag=other_tag,replicate=replicate).count() > 0:
-			
+		if  self.instance.experiment.sample_set.exclude(sample_name=sample_name).filter(cell_model=cell_model,shRNA_library=shRNA_library,time_in_days=time_in_days,treatment=treatment,treatment_dose=treatment_dose,shRNA_on=shRNA_on,other_tag=other_tag,replicate=replicate).count() > 0:
 			raise ValidationError('Duplicated Sample Names! Change replicate if needed!')
+		
 		if self.instance.experiment.sample_set.exclude(sample_name=sample_name).filter(index=index).count() > 0:
                 	#raise ValidationError(cleaned_data['id'])
                         raise ValidationError('This Index is already in use! Please select a different Index.')
@@ -262,12 +268,6 @@ class SampleForm(forms.ModelForm):
 
 SampleFormSet = inlineformset_factory(Experiment, Sample,
                                         form=SampleForm,
-                                        #fields=('index','cell_model','shRNA_library','shRNA_on','time_in_days','treatment','treatment_dose','replicate','other_tag','comment',),
-                                        #labels = {
-                                        #'treatment_dose': 'Treatment Dose (nM)',
-                                        #'time_in_days': 'Time (Days)',
-                                        #'shRNA_on': 'shRNA ON/OFF',
-                                        #},
                                         extra=1,
                                         can_delete = False,
                                         can_order = False
@@ -280,8 +280,35 @@ SampleFormSet0 = inlineformset_factory(Experiment, Sample,
                                         can_order = False
         )
 
+class SampleFormSetP(SampleFormSet): # sub class it
+
+    def __init__(self, *args, **kwargs):
+        #  create a user attribute and take it out from kwargs
+        # so it doesn't messes up with the other formset kwargs
+        self.sample_id = kwargs.pop('sample_id')
+        super(SampleFormSetP, self).__init__(*args, **kwargs)
+
+    def _construct_form(self, *args, **kwargs):
+        # inject user in each form on the formset
+        kwargs['sample_id'] = self.sample_id
+        return super(SampleFormSetP, self)._construct_form(*args, **kwargs)
+
+class SampleFormSet0P(SampleFormSet0): # sub class it
+
+    def __init__(self, *args, **kwargs):
+        #  create a user attribute and take it out from kwargs
+        # so it doesn't messes up with the other formset kwargs
+        self.sample_id = kwargs.pop('sample_id')
+        super(SampleFormSet0P, self).__init__(*args, **kwargs)   
+
+    def _construct_form(self, *args, **kwargs):
+        # inject user in each form on the formset
+        kwargs['sample_id'] = self.sample_id    
+        return super(SampleFormSet0P, self)._construct_form(*args, **kwargs)
+
 
 class SampleSheetImportForm(forms.Form):
     title = forms.CharField(max_length=50)
     file = forms.FileField()
+
     

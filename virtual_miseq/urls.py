@@ -57,7 +57,7 @@ urlpatterns = [
 	url(r'^console/myexperiments/$', views.myexperiments, name='myexperiments'),
 	url(r'^console/account/$', views.account, name='account'),
 
-	url(r'/physical/search1/$', views.physical_search, name='physical_search'),
+	url(r'finished/$', views.physical_search, name='physical_search'),
 
 	##########################database views##########################
 	url(r'^investigators/$', views.IDMSUserList.as_view(template_name='dbView/IDMSUserList.html')),

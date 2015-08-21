@@ -337,8 +337,7 @@
                                 <td>{% autoescape off %}{{experiment.get_taged_investigator_name}} {% endautoescape %}</td>
                                  <td>
                                 {%if experiment.created_by.NTID.upper == user.username.upper or user.username.upper in auth_users|key:experiment.experiment_id%}
-                                <a href="/virtual/edit/{{experiment.experiment_id}}/" type="submit" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;">Edit Experiment</a>
-                                <a href="/virtual/get/{{experiment.experiment_id}}/#sample" type="submit" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;">Edit sample</a>
+                                <a href="/virtual/get/{{experiment.experiment_id}}/#sample" type="submit" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;">Edit</a>
                                 {%endif%}
                                 <a href="/virtual/export/{{experiment.experiment_id}}/samplesheet/" class="btn btn-info btn-xs" style="position:relative;margin-right: 5px;">SampleSheet</a>
                                 </td>
@@ -806,6 +805,21 @@
 <script>
 
 $(document).ready(function() {
+
+    //hide empty columns
+    $('#recent tr th').each(function(i) {
+     //select all tds in this column
+     var tds = $(this).parents('table')
+              .find('tr td:nth-child(' + (i + 1) + ')');
+        //check if all the cells in this column are empty
+        if(tds.length == tds.filter(':empty').length) { 
+            //hide header
+            $(this).hide();
+            //hide cells
+            tds.hide();
+        } 
+    }); 
+
     $('#recent').dataTable( {
         "pageLength": 10,
         "order": [[ 2, "desc" ]],

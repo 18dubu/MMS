@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from .models import Experiment, Sample, Log, IDMSUser,MiseqIndex,PoolNumberChoice,Treatment,CcleLibrary,ShrnaLibrary, Project
-from forms import ExperimentForm, SampleForm, SampleFormSet, SampleFormSet0, SampleSheetImportForm, LogForm,FinishForm
+from .models import Experiment, Sample, Log, IDMSUser,MiseqIndex,PoolNumberChoice,Treatment,CcleLibrary,ShrnaLibrary, Project, FinishedMiseq
+from forms import ExperimentForm, SampleForm, SampleFormSet, SampleFormSetP, SampleFormSet0, SampleFormSet0P, SampleSheetImportForm, LogForm,FinishForm
 
 from django.views.generic import ListView
 from django.shortcuts import render, render_to_response, get_object_or_404
@@ -234,14 +234,13 @@ def planned(request):
 
 
 def physical_search(request):
-        experiments = Experiment.objects.all()
+        experiments = FinishedMiseq.objects.all()
         args = {}
         args.update(csrf(request))
         args['p'] = request.GET.get('p', '')
         args['u'] = request.GET.get('u', '')
         args['user'] = request.user
         args['experiments'] = experiments
-        args['auth_users'] = get_auth_users(experiments)
 
         return render_to_response('listView/finished.html', args)
 
@@ -492,6 +491,7 @@ def finish_exp(request, experiment_id=None):
 							send_mail('MMS Request Analysis', ' '.join([experiment_id,new_exp.miseq_folder_name]), request.user.username,['handong.ma@pfizer.com'], fail_silently=False)
 							return HttpResponseRedirect('/virtual/new/confirm/%s/' % new_exp.experiment_id)								
 							#except:
+							#	return HttpResponseRedirect('/virtual/get/%s/' % new_exp.experiment_id)
 							#	raise Exception('Send email error')
 		
 	                                	return HttpResponseRedirect('/virtual/get/%s/' % new_exp.experiment_id)
@@ -606,7 +606,7 @@ def add_edit_sample(request,experiment_id, mode,sample_id=None):
 						'other_tag':targetSam.other_tag,
 						'comment':targetSam.comment
 						}
-				samforms = SampleFormSet(initial=[init_data])
+				samforms = SampleFormSetP(instance=Experiment(),initial=[init_data],sample_id=sample_id)
 
 		elif mode == 'editsample':
 			title = 'Edit Sample'
@@ -614,7 +614,8 @@ def add_edit_sample(request,experiment_id, mode,sample_id=None):
 				samforms = SampleFormSet0(instance=experiment)
 			else:
 				targetSam = get_object_or_404(experiment.sample_set.all(),pk=sample_id)
-                        	samforms = SampleFormSet0(instance=experiment, queryset=Sample.objects.filter(id=sample_id))
+			#	samforms = SampleForm(instance=Sample.objects.filter(id=sample_id),sample_id=sample_id)
+				samforms = SampleFormSet0P(instance=experiment, queryset=Sample.objects.filter(id=sample_id),sample_id=sample_id)
 		else:
 			raise Exception('Unknow URL parameter')
 

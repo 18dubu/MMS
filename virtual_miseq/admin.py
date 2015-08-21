@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 
 from django.contrib import admin
-from .models import Experiment, Sample, Log, Treatment, IDMSUser, CcleLibrary, CellModel, VectorLibrary, ShrnaLibrary, MiseqIndex, PoolNumberChoice, Project
+from .models import Experiment, Sample, Log, Treatment, IDMSUser, CcleLibrary, CellModel, VectorLibrary, ShrnaLibrary, MiseqIndex, PoolNumberChoice, Project, FinishedMiseq
 
 from import_export.admin import ImportExportMixin, ExportActionModelAdmin
 
@@ -13,6 +13,11 @@ class SampleInline(admin.StackedInline):
 
 class ProjectAdmin(ImportExportMixin, admin.ModelAdmin):
         list_filter = ['created_by','name','finish_flag']
+
+
+class FinishedMiseqAdmin(ImportExportMixin, admin.ModelAdmin):
+        list_filter = ['InvestigatorName','ProjectName','Sample_ID']
+
 
 class ExperimentAdmin(ImportExportMixin, admin.ModelAdmin):
 	list_filter = ['experiment_date','design_type','finish_flag','workflow', 'investigator']
@@ -54,6 +59,7 @@ class PoolNumberChoiceAdmin(ImportExportMixin, admin.ModelAdmin):
         list_filter = ['description']
 
 admin.site.register(Project, ProjectAdmin)
+admin.site.register(FinishedMiseq,FinishedMiseqAdmin)
 admin.site.register(Experiment, ExperimentAdmin)
 admin.site.register(Sample, SampleAdmin)
 admin.site.register(Log, LogAdmin)
