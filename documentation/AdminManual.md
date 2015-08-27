@@ -43,5 +43,45 @@ steps:
 
 
 
+##initial setup. Tested for fresh Ubuntu 14.04 install
+
+apt-get install python-pip  # python-dev build-essential 
+pip install --upgrade pip 
+pip install django
 
 
+pip install django-import_export
+pip install django-ajax-selects
+pip install django-selectable
+pip install django-envelope
+pip install django-  # pip install django==1.8.4
+
+pip install django-crispy_forms
+pip install django_datatables_view
+
+
+#DB
+apt-get install postgresql
+apt-get install python-psycopg2
+
+sudo su - postgres
+createdb miseq_db
+createuser mah29
+psql
+\password mah29
+#type in password
+\q  # quit psql
+
+apt-get install python-ldap
+apt-get install git
+pip install git+https://github.com/pinax/django-mailer.git
+
+./manage.py createsuperuser
+
+#mail?
+apt-get install postfix
+
+
+#database upload
+#upload from db/latest folders using admin site
+#add analyst role to certain people from IDMS table

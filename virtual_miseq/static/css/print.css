@@ -1,0 +1,27 @@
+/*
+	Print Styles
+*/
+header, .invent_postHero, .investigateHero_post, .inventPost_sidebar, .inventPost_meta, .investigatePost_sidebar, .investigatePost_meta, footer {
+  display:none;
+}
+
+.inventPost_content, .investigatePost_content {
+  margin:0;
+  padding:0;
+  top:0;
+}
+
+.page-wrapper {
+  width:100%;
+}
+
+.inventPost_content h1 {
+  font-size: 2rem;
+  padding-right: 0;
+}
+
+.inventPost_content .postSubhead {
+  font-size: 1rem;
+  padding-right: 0;
+}
+

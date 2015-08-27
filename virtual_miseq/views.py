@@ -9,13 +9,23 @@ from django.template import RequestContext, loader
 from django.template.defaulttags import register
 from django.utils import timezone
 from django.core.context_processors import csrf
-from django.core.mail import send_mail
 from django.core.exceptions import ValidationError
 from django.core.exceptions import PermissionDenied
 from django_datatables_view.base_datatable_view import BaseDatatableView
 from django.forms.models import model_to_dict
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
+
+# favour django-mailer but fall back to django.core.mail
+from django.conf import settings
+
+#if "mailer" in settings.INSTALLED_APPS:
+#    from mailer import send_mail
+#else:
+from django.core.mail import send_mail
+import subprocess
+
+import os
 import json
 import uuid
 import csv
@@ -485,14 +495,18 @@ def finish_exp(request, experiment_id=None):
 						new_exp.save()
 						#send email
 						if new_exp.finish_flag=='Finished' and new_exp.miseq_folder_name and new_exp.analyst:
-
+							#command = 'python /data/www/rnai.pfizer.com/django-MMS/testmail.py '
+							#command = 'python /data/www/rnai.pfizer.com/django-MMS/manage.py shell < /data/www/rnai.pfizer.com/django-MMS/testmail.py'
+							#pipe = subprocess.Popen(command.split(' '), stdout=subprocess.PIPE)
+							#result = pipe.stdout.read()
+							#raise Exception(result)
 							#try:
-								
-							send_mail('MMS Request Analysis', ' '.join([experiment_id,new_exp.miseq_folder_name]), request.user.username,['handong.ma@pfizer.com'], fail_silently=False)
+							#subprocess.call('python /data/www/rnai.pfizer.com/django-MMS/manage.py shell < /data/www/rnai.pfizer.com/django-MMS/testmail.py',shell=True)#(['python ../manage.py shell < ../testmail.py'])		
+							send_mail('MMS Request Analysis', ' '.join([experiment_id,new_exp.miseq_folder_name]), request.user.username,['handong.ma@pfizer.com'], fail_silently=True)
 							return HttpResponseRedirect('/virtual/new/confirm/%s/' % new_exp.experiment_id)								
 							#except:
-							#	return HttpResponseRedirect('/virtual/get/%s/' % new_exp.experiment_id)
-							#	raise Exception('Send email error')
+								#return HttpResponseRedirect('/virtual/get/%s/' % new_exp.experiment_id)
+								#raise Exception('Send email error')
 		
 	                                	return HttpResponseRedirect('/virtual/get/%s/' % new_exp.experiment_id)
 

@@ -43,7 +43,7 @@ INSTALLED_APPS = (
     'envelope',
     'parsley',
     'crispy_forms',
-
+    'mailer',
 
 
 
@@ -122,8 +122,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
-
 STATIC_ROOT = os.path.join(BASE_DIR, "static/")
+#STATICFIRES_DIR = ('/data/www/rnai.pfizer.com/static')
 
 MEDIA_URL = '/media/'
 
@@ -142,13 +142,13 @@ AJAX_LOOKUP_CHANNELS = {
 
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
 
-
+#EMAIL_BACKEND = "mailer.backend.DbBackend"
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'localhost'
-EMAIL_PORT = 25
-EMAIL_HOST_USER = ''
-EMAIL_HOST_PASSWORD = ''
-EMAIL_USE_TLS = False
-DEFAULT_FROM_EMAIL = 'Pfizer MMS <SRVGBL-ORUCOMPBIO@pfizer.com>'
+EMAIL_HOST = 'smtp.gmail.com'#'localhost'
+EMAIL_HOST_USER = 'handongma.work@gmail.com'
+EMAIL_HOST_PASSWORD = 'mhdgoogle1384'
+EMAIL_PORT = 587#25
+EMAIL_USE_TLS = True#False
+#DEFAULT_FROM_EMAIL = 'Pfizer MMS <SRVGBL-ORUCOMPBIO@pfizer.com>'
 
 
